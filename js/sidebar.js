@@ -20,6 +20,14 @@ const Sidebar = {
       document.getElementById('main-content').addEventListener('click', () => {
         sidebar.classList.remove('mobile-open');
       });
+
+      // Botão X de fechar interno
+      const closeBtn = document.getElementById('close-sidebar-btn');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          sidebar.classList.remove('mobile-open');
+        });
+      }
     }
   },
 

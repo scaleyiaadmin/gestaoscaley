@@ -119,16 +119,51 @@ textarea {
   .sidebar {
     position: fixed;
     left: -100%;
+    width: 80%;
+    max-width: 280px;
     z-index: 1000;
     transition: left var(--transition-slow);
+    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
   }
 
   .sidebar.mobile-open {
     left: 0;
   }
 
+  /* Backdrop quando aberto */
+  .sidebar.mobile-open::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: -1;
+    left: 100%; /* Inicia fora da sidebar */
+    width: 200vw; /* Cobre o resto da tela */
+    pointer-events: auto;
+  }
+
   #main-content {
     margin-left: 0;
+  }
+
+  .page-container {
+    padding: var(--space-4); /* Menos padding no mobile para ganhar espaço */
+  }
+
+  /* Estilo do botão de fechar interno */
+  .close-sidebar-mobile {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    position: absolute;
+    right: 16px;
+    top: 24px;
   }
 
   .mobile-header {
