@@ -29,6 +29,11 @@ const Financeiro = {
     document.getElementById('filter-type').addEventListener('change', () => this.render());
     document.getElementById('add-transaction-btn').addEventListener('click', () => this.openForm());
     document.getElementById('save-transaction-btn').addEventListener('click', () => this.saveForm());
+
+    // Eventos Despesas Fixas
+    document.getElementById('manage-expenses-btn').addEventListener('click', () => this.openFixedExpensesModal());
+    document.getElementById('btn-new-fixed-exp').addEventListener('click', () => this.openFixedExpForm());
+    document.getElementById('save-fixed-exp-btn').addEventListener('click', () => this.saveFixedExp());
   },
 
   render() {
@@ -148,6 +153,92 @@ const Financeiro = {
       Store.delete('transactions', id);
       closeModal('modal-confirm');
       this.render();
+    };
+    openModal('modal-confirm');
+  },
+
+  // ======== DESPESAS FIXAS ========
+
+  openFixedExpensesModal() {
+    this.renderFixedExpensesList();
+    openModal('modal-fixed-expenses');
+  },
+
+  renderFixedExpensesList() {
+    const list = Store.getAll('fixed_expenses');
+    const container = document.getElementById('fixed-expenses-list-manage');
+
+    if (list.length === 0) {
+      container.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;padding:12px;text-align:center;">Nenhuma despesa fixa cadastrada.</p>';
+      return;
+    }
+
+    container.innerHTML = list.map(item => `
+      <div style="border: 1px solid var(--border-color); background: var(--bg-hover); padding: 12px; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <strong style="color: var(--text-primary); font-size: 14px;">${item.name}</strong>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top:2px;">
+            R$ ${parseFloat(item.value).toFixed(2)} • Todo dia ${item.dueDay}
+          </div>
+        </div>
+        <div style="display:flex; gap: 4px;">
+          <button class="btn-ghost btn-icon btn-sm" onclick="Financeiro.editFixedExp('${item.id}')" title="Editar">
+            <i data-lucide="pencil" style="width:14px;height:14px;"></i>
+          </button>
+          <button class="btn-ghost btn-icon btn-sm" onclick="Financeiro.confirmDeleteFixedExp('${item.id}')" title="Excluir">
+            <i data-lucide="trash-2" style="width:14px;height:14px;color:var(--color-danger);"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  },
+
+  openFixedExpForm(data = null) {
+    document.getElementById('modal-fixed-exp-title').textContent = data ? 'Editar Despesa Fixa' : 'Nova Despesa Fixa';
+    document.getElementById('fe-name').value = data ? data.name : '';
+    document.getElementById('fe-value').value = data ? data.value : '';
+    document.getElementById('fe-due-day').value = data ? data.dueDay : '';
+    document.getElementById('fe-category').value = data ? data.category : 'fixos';
+    document.getElementById('fe-id').value = data ? data.id : '';
+    openModal('modal-fixed-exp-form');
+  },
+
+  saveFixedExp() {
+    const id = document.getElementById('fe-id').value;
+    const data = {
+      name: document.getElementById('fe-name').value.trim(),
+      value: document.getElementById('fe-value').value.trim(),
+      dueDay: document.getElementById('fe-due-day').value.trim(),
+      category: document.getElementById('fe-category').value
+    };
+    
+    if (!data.name || !data.value || !data.dueDay) return;
+
+    if (id) {
+      Store.update('fixed_expenses', id, data);
+    } else {
+      Store.add('fixed_expenses', data);
+    }
+    
+    closeModal('modal-fixed-exp-form');
+    this.renderFixedExpensesList();
+    if(typeof Cobrancas !== 'undefined') Cobrancas.render();
+  },
+
+  editFixedExp(id) {
+    const item = Store.getById('fixed_expenses', id);
+    if (item) this.openFixedExpForm(item);
+  },
+
+  confirmDeleteFixedExp(id) {
+    document.getElementById('confirm-message').textContent = 'Excluir esta Despesa Fixa? O histórico de pagamentos dela NÃO será apagado.';
+    const btn = document.getElementById('confirm-action-btn');
+    btn.onclick = () => {
+      Store.delete('fixed_expenses', id);
+      closeModal('modal-confirm');
+      this.renderFixedExpensesList();
+      if(typeof Cobrancas !== 'undefined') Cobrancas.render();
     };
     openModal('modal-confirm');
   }

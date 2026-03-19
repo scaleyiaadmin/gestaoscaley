@@ -166,10 +166,16 @@
               <h1>Financeiro</h1>
               <p>Gerencie suas receitas e despesas</p>
             </div>
-            <button class="btn btn-primary" id="add-transaction-btn">
-              <i data-lucide="plus"></i>
-              Nova Transação
-            </button>
+            <div style="display: flex; gap: var(--space-3);">
+              <button class="btn btn-secondary" id="manage-expenses-btn">
+                <i data-lucide="repeat"></i>
+                Despesas Fixas
+              </button>
+              <button class="btn btn-primary" id="add-transaction-btn">
+                <i data-lucide="plus"></i>
+                Nova Transação
+              </button>
+            </div>
           </div>
 
           <div class="finance-summary" id="finance-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4);"></div>
@@ -298,27 +304,44 @@
         </div>
       </section>
 
-      <!-- ======== COBRANÇAS (MRR) ======== -->
+      <!-- ======== COBRANÇAS / PENDÊNCIAS ======== -->
       <section class="page-section" id="page-cobrancas">
         <div class="page-container">
           <div class="page-header">
             <div>
-              <h1>Pagamentos Pendentes</h1>
-              <p>Acompanhe e confirme as mensalidades em aberto</p>
+              <h1>Contas e Pendências</h1>
+              <p>Acompanhe Mensalidades a Receber (MRR) e Despesas Fixas a Pagar</p>
             </div>
           </div>
 
-          <div class="mrr-section">
-            <div class="mrr-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-              <h2 style="font-size: var(--font-size-md); font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="calendar-clock" style="width: 18px; height: 18px; color: var(--accent-primary);"></i>
-                Faturas do Mês - <span id="mrr-month-name" style="color: var(--text-secondary); margin-left: 4px;">Atual</span>
-              </h2>
-            </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); align-items: start;">
             
-            <div class="mrr-list" id="mrr-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-4);">
-              <!-- Cards de Fatura de Clientes gerados pelo JS -->
+            <!-- A Receber (MRR) -->
+            <div class="mrr-section">
+              <div class="mrr-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                <h2 style="font-size: var(--font-size-md); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="arrow-down-to-line" style="width: 18px; height: 18px; color: var(--color-success);"></i>
+                  A Receber do Mês (MRR) - <span id="mrr-month-name" style="color: var(--text-secondary); margin-left: 4px;">Atual</span>
+                </h2>
+              </div>
+              <div class="mrr-list" id="mrr-list" style="display: flex; flex-direction: column; gap: var(--space-4);">
+                <!-- Cards de Fatura de Clientes -->
+              </div>
             </div>
+
+            <!-- A Pagar (Despesas Fixas) -->
+            <div class="fixed-expenses-section">
+              <div class="mrr-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                <h2 style="font-size: var(--font-size-md); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="arrow-up-from-line" style="width: 18px; height: 18px; color: var(--color-danger);"></i>
+                  A Pagar do Mês (Despesas Fixas) - <span id="fixed-exp-month-name" style="color: var(--text-secondary); margin-left: 4px;">Atual</span>
+                </h2>
+              </div>
+              <div class="fixed-expenses-list" id="fixed-exp-list" style="display: flex; flex-direction: column; gap: var(--space-4);">
+                <!-- Cards de Despesas gerados pelo JS -->
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -877,6 +900,70 @@
             <button class="btn btn-danger" id="confirm-action-btn">Excluir</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Gerenciar Despesas Fixas -->
+  <div class="modal-overlay" id="modal-fixed-expenses">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Gerenciar Despesas Fixas</h2>
+        <button class="modal-close" onclick="closeModal('modal-fixed-expenses')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <button class="btn btn-primary" id="btn-new-fixed-exp" style="margin-bottom: var(--space-4); width: 100%; justify-content: center;">
+          <i data-lucide="plus"></i> Nova Despesa Fixa
+        </button>
+        <div id="fixed-expenses-list-manage" style="display: flex; flex-direction: column; gap: var(--space-3); max-height: 400px; overflow-y: auto;">
+          <!-- Items generados pelo JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cadastrar/Editar Despesa Fixa -->
+  <div class="modal-overlay" id="modal-fixed-exp-form">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-fixed-exp-title">Nova Despesa Fixa</h2>
+        <button class="modal-close" onclick="closeModal('modal-fixed-exp-form')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form-fixed-exp">
+          <div class="form-group">
+            <label>Nome / Descrição</label>
+            <input type="text" id="fe-name" placeholder="Ex: Cartão de Crédito, Pró-Labore" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Valor Mensal (R$)</label>
+              <input type="number" id="fe-value" step="0.01" placeholder="Ex: 500.00" required>
+            </div>
+            <div class="form-group">
+              <label>Dia do Vencimento</label>
+              <input type="number" id="fe-due-day" min="1" max="31" placeholder="Ex: 10" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Categoria Contábil</label>
+            <select id="fe-category">
+              <option value="fixos">Custos Fixos</option>
+              <option value="salarios">Salários e Pró-Labore</option>
+              <option value="servicos">Serviços e Software</option>
+              <option value="outros">Outros</option>
+            </select>
+          </div>
+          <input type="hidden" id="fe-id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-fixed-exp-form')">Voltar</button>
+        <button class="btn btn-primary" id="save-fixed-exp-btn">Salvar</button>
       </div>
     </div>
   </div>

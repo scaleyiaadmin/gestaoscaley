@@ -14,6 +14,7 @@ const Dashboard = {
 
   renderMrrAlerts() {
     const clients = Store.getAll('clients').filter(c => parseFloat(c.mrr) > 0);
+    const fixedExpenses = Store.getAll('fixed_expenses');
     const container = document.getElementById('dashboard-mrr-alerts');
     
     const today = new Date();
@@ -21,43 +22,41 @@ const Dashboard = {
     const currentYear = today.getFullYear();
     const currentDay = today.getDate();
 
-    // Pegamos transacoes pagas _no_ mês corrente
     const startObj = new Date(currentYear, currentMonth, 1);
     const endObj = new Date(currentYear, currentMonth + 1, 0);
     
     const monthTx = Store.getAll('transactions').filter(t => {
       const d = new Date(t.date + 'T00:00:00');
-      return t.type === 'receita' && t.category === 'mrr' && d >= startObj && d <= endObj;
+      return (t.category === 'mrr' || t.fixedExpId) && d >= startObj && d <= endObj;
     });
 
     const alerts = [];
 
+    // MRR
     clients.forEach(c => {
       const isPaid = monthTx.some(t => t.mrrClientId === c.id);
       if (!isPaid) {
         const dueDay = parseInt(c.dueDay) || 1;
         if (currentDay >= dueDay) {
-          // Atrasado / Vence hoje
           alerts.push(`
             <div style="background: rgba(248, 113, 113, 0.1); border-left: 4px solid var(--color-danger); padding: 12px 16px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between;">
               <div style="display: flex; align-items: center; gap: 12px;">
                 <i data-lucide="alert-circle" style="color: var(--color-danger); width: 20px; height: 20px;"></i>
                 <div>
-                  <strong style="color: var(--text-primary); font-size: 14px;">Cobrança Pendente: ${c.company || c.name}</strong>
+                  <strong style="color: var(--text-primary); font-size: 14px;">MRR Pendente: ${c.company || c.name}</strong>
                   <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Venceu dia ${dueDay} (R$ ${parseFloat(c.mrr).toFixed(2)})</div>
                 </div>
               </div>
-              <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px; background: transparent;" onclick="document.querySelector('[data-page=financeiro]').click()">Acessar Painel</button>
+              <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px; background: transparent;" onclick="document.querySelector('[data-page=cobrancas]').click()">Cobrar Cliente</button>
             </div>
           `);
         } else if (dueDay - currentDay <= 3) {
-          // Vence nos próximos 3 dias
           alerts.push(`
             <div style="background: rgba(251, 146, 60, 0.1); border-left: 4px solid var(--color-warning); padding: 12px 16px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between;">
               <div style="display: flex; align-items: center; gap: 12px;">
                 <i data-lucide="clock" style="color: var(--color-warning); width: 20px; height: 20px;"></i>
                 <div>
-                  <strong style="color: var(--text-primary); font-size: 14px;">Vencimento Próximo: ${c.company || c.name}</strong>
+                  <strong style="color: var(--text-primary); font-size: 14px;">MRR Vencimento Próximo: ${c.company || c.name}</strong>
                   <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Vence em ${dueDay - currentDay} dia(s) (R$ ${parseFloat(c.mrr).toFixed(2)})</div>
                 </div>
               </div>
@@ -67,8 +66,41 @@ const Dashboard = {
       }
     });
 
+    // Despesas Fixas
+    fixedExpenses.forEach(e => {
+      const isPaid = monthTx.some(t => t.fixedExpId === e.id);
+      if (!isPaid) {
+        const dueDay = parseInt(e.dueDay) || 1;
+        if (currentDay >= dueDay) {
+          alerts.push(`
+            <div style="background: rgba(248, 113, 113, 0.1); border-left: 4px solid var(--color-danger); padding: 12px 16px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <i data-lucide="alert-triangle" style="color: var(--color-danger); width: 20px; height: 20px;"></i>
+                <div>
+                  <strong style="color: var(--text-primary); font-size: 14px;">Despesa Fixa a Pagar: ${e.name}</strong>
+                  <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Venceu dia ${dueDay} (R$ ${parseFloat(e.value).toFixed(2)})</div>
+                </div>
+              </div>
+              <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px; background: transparent;" onclick="document.querySelector('[data-page=cobrancas]').click()">Pagar Despesa</button>
+            </div>
+          `);
+        } else if (dueDay - currentDay <= 3) {
+          alerts.push(`
+            <div style="background: rgba(251, 146, 60, 0.1); border-left: 4px solid var(--color-warning); padding: 12px 16px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <i data-lucide="clock" style="color: var(--color-warning); width: 20px; height: 20px;"></i>
+                <div>
+                  <strong style="color: var(--text-primary); font-size: 14px;">Despesa Fixa Vencimento Próximo: ${e.name}</strong>
+                  <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Vence em ${dueDay - currentDay} dia(s) (R$ ${parseFloat(e.value).toFixed(2)})</div>
+                </div>
+              </div>
+            </div>
+          `);
+        }
+      }
+    });
+
     container.innerHTML = alerts.join('');
-    // Call createIcons locally inside logic too
   },
 
   renderWelcome() {
