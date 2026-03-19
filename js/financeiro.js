@@ -64,7 +64,11 @@ const Financeiro = {
         <div class="summary-value text-danger">${formatCurrency(summary.despesas)}</div>
       </div>
       <div class="summary-card">
-        <div class="summary-label">Saldo</div>
+        <div class="summary-label">A Pagar (Fixas)</div>
+        <div class="summary-value" style="color: var(--color-warning);">${formatCurrency(summary.aPagar)}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Saldo Atual</div>
         <div class="summary-value" style="color: ${summary.saldo >= 0 ? 'var(--color-success)' : 'var(--color-danger)'};">${formatCurrency(summary.saldo)}</div>
       </div>
     `;

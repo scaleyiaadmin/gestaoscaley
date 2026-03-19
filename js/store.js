@@ -273,6 +273,25 @@ const Store = {
 
   // ===== MÉTODOS DE CONSULTA =====
 
+  getFixedExpensesPending(month, year) {
+    const expenses = this.getAll('fixed_expenses');
+    // Se month/year não passados, assume hoje
+    const m = month !== undefined && month !== -1 ? month : new Date().getMonth();
+    const y = year !== undefined ? year : new Date().getFullYear();
+
+    // Filtra transações despesas fixas daquele mês
+    const startObj = new Date(y, m, 1);
+    const endObj = new Date(y, m+1, 0);
+    const monthTx = this.getAll('transactions').filter(t => {
+      const d = new Date(t.date + 'T00:00:00');
+      return t.type === 'despesa' && t.fixedExpId && d >= startObj && d <= endObj;
+    });
+
+    return expenses
+      .filter(e => !monthTx.some(t => t.fixedExpId === e.id))
+      .reduce((s, e) => s + Number(e.value), 0);
+  },
+
   // Transações filtradas por mês/ano
   getTransactions(month, year, type) {
     let items = this.getAll('transactions');
@@ -301,7 +320,8 @@ const Store = {
     const items = this.getTransactions(month, year);
     const receitas = items.filter(t => t.type === 'receita').reduce((s, t) => s + Number(t.value), 0);
     const despesas = items.filter(t => t.type === 'despesa').reduce((s, t) => s + Number(t.value), 0);
-    return { receitas, despesas, saldo: receitas - despesas };
+    const aPagar = this.getFixedExpensesPending(month, year);
+    return { receitas, despesas, saldo: receitas - despesas, aPagar };
   },
 
   // Dados do gráfico (últimos 6 meses)
