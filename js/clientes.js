@@ -9,6 +9,25 @@ const Clientes = {
     document.getElementById('add-client-btn').addEventListener('click', () => this.openForm());
     document.getElementById('save-client-btn').addEventListener('click', () => this.saveForm());
     document.getElementById('client-search').addEventListener('input', (e) => this.render(e.target.value));
+    document.getElementById('cl-contract-file').addEventListener('change', (e) => this.handleFileUpload(e));
+  },
+
+  handleFileUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('O arquivo do contrato é muito grande (Máx: 5MB).');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      document.getElementById('cl-contract-data').value = event.target.result;
+      document.getElementById('cl-contract-name').value = file.name;
+    };
+    reader.readAsDataURL(file);
   },
 
   render(search = '') {
@@ -21,7 +40,8 @@ const Clientes = {
       clients = clients.filter(c =>
         c.name.toLowerCase().includes(q) ||
         (c.email && c.email.toLowerCase().includes(q)) ||
-        (c.company && c.company.toLowerCase().includes(q))
+        (c.company && c.company.toLowerCase().includes(q)) ||
+        (c.cnpj && c.cnpj.toLowerCase().includes(q))
       );
     }
 
@@ -53,8 +73,10 @@ const Clientes = {
           <div class="client-name" style="margin-bottom: 2px;">${c.name}</div>
           ${c.company ? `<div class="client-company" style="display:flex;align-items:center;gap:4px;color:var(--accent-secondary);font-weight:500;margin-bottom:12px;"><i data-lucide="building-2" style="width:14px;height:14px;"></i> ${c.company}</div>` : '<div style="margin-bottom:12px;"></div>'}
           <div class="client-details">
+            ${c.cnpj ? `<div class="client-detail"><i data-lucide="file-badge-2"></i> ${c.cnpj}</div>` : ''}
             ${c.email ? `<div class="client-detail"><i data-lucide="mail"></i> ${c.email}</div>` : ''}
             ${c.phone ? `<div class="client-detail"><i data-lucide="phone"></i> ${c.phone}</div>` : ''}
+            ${c.contractData ? `<div class="client-detail"><a href="${c.contractData}" download="${c.contractName || 'contrato'}"><i data-lucide="file-text"></i> Baixar Contrato</a></div>` : ''}
           </div>
           <div class="client-projects-count">
             <i data-lucide="folder"></i>
@@ -72,8 +94,12 @@ const Clientes = {
     document.getElementById('cl-email').value = data ? (data.email || '') : '';
     document.getElementById('cl-phone').value = data ? (data.phone || '') : '';
     document.getElementById('cl-company').value = data ? (data.company || '') : '';
+    document.getElementById('cl-cnpj').value = data ? (data.cnpj || '') : '';
     document.getElementById('cl-notes').value = data ? (data.notes || '') : '';
     document.getElementById('cl-id').value = data ? data.id : '';
+    document.getElementById('cl-contract-file').value = '';
+    document.getElementById('cl-contract-data').value = data ? (data.contractData || '') : '';
+    document.getElementById('cl-contract-name').value = data ? (data.contractName || '') : '';
     openModal('modal-client');
   },
 
@@ -84,7 +110,10 @@ const Clientes = {
       email: document.getElementById('cl-email').value.trim(),
       phone: document.getElementById('cl-phone').value.trim(),
       company: document.getElementById('cl-company').value.trim(),
-      notes: document.getElementById('cl-notes').value.trim()
+      cnpj: document.getElementById('cl-cnpj').value.trim(),
+      notes: document.getElementById('cl-notes').value.trim(),
+      contractData: document.getElementById('cl-contract-data').value,
+      contractName: document.getElementById('cl-contract-name').value
     };
     if (!data.name) return;
 
