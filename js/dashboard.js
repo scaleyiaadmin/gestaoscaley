@@ -103,8 +103,9 @@ const Dashboard = {
     container.innerHTML = alerts.join('');
   },
 
-  renderWelcome() {
-    document.getElementById('welcome-name').textContent = Store.getUserName();
+  async renderWelcome() {
+    const name = await Store.getDisplayUser();
+    document.getElementById('welcome-name').textContent = name;
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-BR', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'

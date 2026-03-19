@@ -23,8 +23,14 @@ const Store = {
     console.log('[Sync] Iniciando download do Supabase...');
 
     try {
-      // 1. Pega os workspaces
-      const { data: wsData, error: wsErr } = await supabaseClient.from('scaley_workspaces').select('*');
+      // 1. Pega a sessão e o ID do usuário
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (!userId) throw new Error('Usuário não autenticado');
+
+      // 2. Pega os workspaces do usuário
+      const { data: wsData, error: wsErr } = await supabaseClient.from('scaley_workspaces').select('*').eq('user_id', userId);
       if (wsErr) throw wsErr;
 
       if (!wsData || wsData.length === 0) {
@@ -43,11 +49,13 @@ const Store = {
       // 2. Garante que 'pessoal' (ou o default recriado) está ativo para sync do conteúdo
       const activeWs = this.getActiveWorkspace();
 
-      // 3. Pega todo conteúdo da tabela genérica para esse workspace
+      // 3. Pega todo conteúdo da tabela genérica para esse workspace e usuário
+      // Nota: userId e session já foram definidos no topo do try
       const { data: contentData, error: contentErr } = await supabaseClient
         .from('scaley_data')
         .select('*')
-        .eq('workspace_id', activeWs.id);
+        .eq('workspace_id', activeWs.id)
+        .eq('user_id', userId);
 
       if (contentErr) throw contentErr;
 
@@ -82,6 +90,11 @@ const Store = {
   async syncUp(entity, action, itemData) {
     const ws = this.getActiveWorkspace();
     
+    // Pega o usuario ativo para assinar o envio
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+    const userId = session.user.id;
+    
     // Se a entidade for "workspaces", usa a tabela separada
     if (entity === 'workspaces') {
       try {
@@ -90,6 +103,7 @@ const Store = {
         } else {
           await supabaseClient.from('scaley_workspaces').upsert({
             id: itemData.id,
+            user_id: userId,
             data: itemData
           });
         }
@@ -109,6 +123,7 @@ const Store = {
         await supabaseClient.from('scaley_data').upsert({
           id: itemData.id,
           workspace_id: ws.id,
+          user_id: userId,
           entity_type: entity,
           data: itemData
         });
@@ -317,6 +332,15 @@ const Store = {
   // Configurações do usuário
   getUserName() {
     return localStorage.getItem('scaley_username') || 'Usuário';
+  },
+
+  async getDisplayUser() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session?.user?.email) {
+      const name = localStorage.getItem('scaley_username');
+      return name || session.user.email.split('@')[0];
+    }
+    return 'Usuário';
   },
 
   setUserName(name) {

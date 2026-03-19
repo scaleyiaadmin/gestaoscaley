@@ -1,6 +1,14 @@
 /* ===== APP — Inicialização ===== */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  
+  // Checar Autenticação
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) {
+    window.location.href = 'login.html';
+    return;
+  }
+
   // Inicializar ícones
   lucide.createIcons();
 
@@ -24,6 +32,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (name && name.trim()) {
       Store.setUserName(name.trim());
       Dashboard.renderWelcome();
+    }
+  });
+
+  // Logout btn
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    if (confirm('Deseja realmente sair?')) {
+      await supabaseClient.auth.signOut();
+      localStorage.clear(); // Limpa dados locais para evitar vazamento entre logins
+      window.location.href = 'login.html';
     }
   });
 
