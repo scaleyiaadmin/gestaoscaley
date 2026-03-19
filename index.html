@@ -102,6 +102,9 @@
             <p id="welcome-date"></p>
           </div>
 
+          <!-- Alertas de MRR -->
+          <div id="dashboard-mrr-alerts" style="margin-bottom: var(--space-6); display: flex; flex-direction: column; gap: var(--space-3);"></div>
+
           <div class="stats-grid" id="dashboard-stats"></div>
 
           <div class="dashboard-grid">
@@ -166,6 +169,23 @@
           </div>
 
           <div class="finance-summary" id="finance-summary"></div>
+
+          <!-- ======== MRR SECTION ======== -->
+          <div class="mrr-section" style="margin-bottom: var(--space-6); background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-4);">
+            <div class="mrr-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+              <h2 style="font-size: var(--font-size-md); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="calendar-clock" style="width: 18px; height: 18px; color: var(--accent-primary);"></i>
+                Mensalidades (MRR) - <span id="mrr-month-name" style="color: var(--text-secondary); margin-left: 4px;">Atual</span>
+              </h2>
+              <div class="mrr-stats" style="display: flex; gap: var(--space-4); font-size: var(--font-size-sm);">
+                <span style="color: var(--color-success); font-weight: 500;" id="mrr-stat-total">Total: R$ 0,00</span>
+                <span style="color: var(--color-danger); font-weight: 500;" id="mrr-stat-pending">Pendentes: 0</span>
+              </div>
+            </div>
+            <div class="mrr-list" id="mrr-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-3);">
+              <!-- Cards de Fatura de Clientes gerados pelo JS -->
+            </div>
+          </div>
 
           <div class="finance-filters">
             <div class="filter-group">
@@ -538,6 +558,16 @@
             <div class="form-group">
               <label>CNPJ</label>
               <input type="text" id="cl-cnpj" placeholder="00.000.000/0001-00">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Mensalidade MRR (R$)</label>
+              <input type="number" id="cl-mrr" placeholder="Ex: 1500" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>Dia do Vencimento</label>
+              <input type="number" id="cl-due-day" placeholder="Ex: 15" min="1" max="31">
             </div>
           </div>
           <div class="form-group">

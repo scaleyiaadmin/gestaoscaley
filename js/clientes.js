@@ -73,6 +73,7 @@ const Clientes = {
           <div class="client-name" style="margin-bottom: 2px;">${c.name}</div>
           ${c.company ? `<div class="client-company" style="display:flex;align-items:center;gap:4px;color:var(--accent-secondary);font-weight:500;margin-bottom:12px;"><i data-lucide="building-2" style="width:14px;height:14px;"></i> ${c.company}</div>` : '<div style="margin-bottom:12px;"></div>'}
           <div class="client-details">
+            ${c.mrr ? `<div class="client-detail"><i data-lucide="badge-dollar-sign"></i> MRR: R$ ${parseFloat(c.mrr).toFixed(2)} (Dia ${c.dueDay || '--'})</div>` : ''}
             ${c.cnpj ? `<div class="client-detail"><i data-lucide="file-badge-2"></i> ${c.cnpj}</div>` : ''}
             ${c.email ? `<div class="client-detail"><i data-lucide="mail"></i> ${c.email}</div>` : ''}
             ${c.phone ? `<div class="client-detail"><i data-lucide="phone"></i> ${c.phone}</div>` : ''}
@@ -95,6 +96,8 @@ const Clientes = {
     document.getElementById('cl-phone').value = data ? (data.phone || '') : '';
     document.getElementById('cl-company').value = data ? (data.company || '') : '';
     document.getElementById('cl-cnpj').value = data ? (data.cnpj || '') : '';
+    document.getElementById('cl-mrr').value = data ? (data.mrr || '') : '';
+    document.getElementById('cl-due-day').value = data ? (data.dueDay || '') : '';
     document.getElementById('cl-notes').value = data ? (data.notes || '') : '';
     document.getElementById('cl-id').value = data ? data.id : '';
     document.getElementById('cl-contract-file').value = '';
@@ -111,6 +114,8 @@ const Clientes = {
       phone: document.getElementById('cl-phone').value.trim(),
       company: document.getElementById('cl-company').value.trim(),
       cnpj: document.getElementById('cl-cnpj').value.trim(),
+      mrr: document.getElementById('cl-mrr').value.trim(),
+      dueDay: document.getElementById('cl-due-day').value.trim(),
       notes: document.getElementById('cl-notes').value.trim(),
       contractData: document.getElementById('cl-contract-data').value,
       contractName: document.getElementById('cl-contract-name').value

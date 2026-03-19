@@ -37,7 +37,122 @@ const Financeiro = {
     const type = document.getElementById('filter-type').value;
 
     this.renderSummary(month, year);
+    this.renderMrr(month, year);
     this.renderTable(month, year, type);
+  },
+
+  renderMrr(month, year) {
+    const clients = Store.getAll('clients').filter(c => parseFloat(c.mrr) > 0);
+    const mrrList = document.getElementById('mrr-list');
+    
+    const monthLabel = month === -1 ? 'Todos' : MONTHS[month];
+    document.getElementById('mrr-month-name').textContent = month === -1 ? 'Anual' : `${monthLabel}/${year}`;
+
+    if (month === -1) {
+      mrrList.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;padding:12px;">Selecione um mês específico para ver detalhamento e pagar MRR.</p>';
+      document.getElementById('mrr-stat-total').textContent = '-';
+      document.getElementById('mrr-stat-pending').textContent = '-';
+      return;
+    }
+
+    // Transações mrr desse mes
+    const startObj = new Date(year, month, 1);
+    const endObj = new Date(year, month + 1, 0);
+    const monthTx = Store.getAll('transactions').filter(t => {
+      const d = new Date(t.date + 'T00:00:00');
+      return t.type === 'receita' && t.category === 'mrr' && d >= startObj && d <= endObj;
+    });
+
+    let totalVal = 0;
+    let pendingCount = 0;
+    const today = new Date();
+    const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+    const currentDay = today.getDate();
+
+    const cards = clients.map(c => {
+      const mrrValue = parseFloat(c.mrr);
+      totalVal += mrrValue;
+      
+      const dueDay = parseInt(c.dueDay) || 1;
+      const isPaid = monthTx.some(t => t.mrrClientId === c.id);
+      
+      let status = 'pago';
+      let statusClass = 'success';
+      let statusText = 'Pago';
+
+      if (!isPaid) {
+        pendingCount++;
+        if (!isCurrentMonth && today > startObj) {
+          status = 'pendente';
+          statusClass = 'danger';
+          statusText = 'Atrasado';
+        } else if (!isCurrentMonth && today < startObj) {
+          statusClass = 'warning';
+          statusText = 'A Vencer (Futuro)';
+        } else {
+           if (currentDay >= dueDay) {
+             status = 'pendente';
+             statusClass = 'danger';
+             statusText = 'Cobrar Hoje';
+           } else {
+             statusClass = 'warning';
+             statusText = 'A Vencer';
+           }
+        }
+      }
+
+      return `
+        <div style="border: 1px solid var(--border-color); background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); display: flex; flex-direction: column; gap: 8px;">
+          <div style="display:flex; justify-content: space-between; align-items:flex-start;">
+            <strong style="color: var(--text-primary); font-size: 14px;">${c.company ? c.company : c.name}</strong>
+            <span class="badge badge-${statusClass}" style="font-size: 10px;">${statusText}</span>
+          </div>
+          <div style="font-size: 13px; color: var(--text-secondary);">
+            MRR: R$ ${mrrValue.toFixed(2)} <br>
+            <i data-lucide="calendar" style="width:12px;height:12px;"></i> Vence dia ${dueDay}
+          </div>
+          ${!isPaid ? `
+            <button class="btn btn-primary" style="padding: 6px 10px; font-size: 12px; margin-top: 4px; width: 100%; justify-content:center;" onclick="Financeiro.payMrr('${c.id}', ${month}, ${year})">
+              Marcar como Pago
+            </button>
+          ` : ''}
+        </div>
+      `;
+    });
+
+    if (cards.length === 0) {
+      mrrList.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;padding:12px;">Nenhum cliente com MRR cadastrado.</p>';
+    } else {
+      mrrList.innerHTML = cards.join('');
+    }
+
+    document.getElementById('mrr-stat-total').textContent = `Total Lançado: R$ ${totalVal.toFixed(2)}`;
+    document.getElementById('mrr-stat-pending').textContent = `Pendentes: ${pendingCount}`;
+    lucide.createIcons();
+  },
+
+  payMrr(clientId, month, year) {
+    const c = Store.getById('clients', clientId);
+    if (!c) return;
+    const dueDay = parseInt(c.dueDay) || 1;
+    // Tenta usar o dia de vencimento para gerar registro no passado/futuro se for o caso
+    let dateStr = `${year}-${String(month+1).padStart(2, '0')}-${String(Math.min(dueDay, 28)).padStart(2, '0')}`;
+    // Se for no mes corrente, coloca a data real de recebimento que eh hoje
+    if (new Date().getMonth() === month && new Date().getFullYear() === year) {
+      dateStr = todayStr();
+    }
+    
+    const data = {
+      description: `MRR - ${c.company ? c.company : c.name}`,
+      value: parseFloat(c.mrr),
+      type: 'receita',
+      date: dateStr,
+      category: 'mrr',
+      mrrClientId: clientId
+    };
+    
+    Store.add('transactions', data);
+    this.render();
   },
 
   renderSummary(month, year) {
