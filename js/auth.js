@@ -22,7 +22,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const toggleText = document.getElementById('toggle-text');
   const authBtn = document.getElementById('auth-btn');
   const toggleBtn = document.getElementById('toggle-auth-mode');
-  
+  const registerFields = document.getElementById('register-fields');
+  const nameInput = document.getElementById('auth-name');
+  const emailInput = document.getElementById('auth-email');
+  const passInput = document.getElementById('auth-pass');
+  const errorBox = document.getElementById('auth-error');
+  const successBox = document.getElementById('auth-success');
+  const form = document.getElementById('auth-form');
+
   // Alternar entre Login e Cadastro
   toggleBtn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -31,17 +38,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     successBox.style.display = 'none';
     
     if (isLoginMode) {
-      title.textContent = 'Gestão Scaley';
-      subtitle.textContent = 'Entre com suas credenciais para continuar';
-      authBtn.innerHTML = '<span>Acessar Dashboard</span> <i data-lucide="arrow-right"></i>';
-      toggleText.textContent = 'Não tem uma conta corporativa?';
-      toggleBtn.textContent = 'Solicitar Acesso';
+      title.textContent = 'Olá novamente!';
+      subtitle.textContent = 'Introduza seus dados para acessar o painel administrativo.';
+      authBtn.innerHTML = '<span>Entrar na Plataforma</span> <i data-lucide="arrow-right"></i>';
+      toggleText.textContent = 'Ainda não tem uma conta?';
+      toggleBtn.textContent = 'Criar conta agora';
+      registerFields.classList.add('hidden');
     } else {
-      title.textContent = 'Criar Conta';
-      subtitle.textContent = 'Preencha os dados para começar sua gestão';
-      authBtn.innerHTML = '<span>Criar minha Conta</span> <i data-lucide="user-plus"></i>';
-      toggleText.textContent = 'Já possui uma conta?';
+      title.textContent = 'Crie sua conta';
+      subtitle.textContent = 'Junte-se ao Scaley e comece sua jornada de gestão.';
+      authBtn.innerHTML = '<span>Começar Gratuitamente</span> <i data-lucide="user-plus"></i>';
+      toggleText.textContent = 'Já faz parte do time?';
       toggleBtn.textContent = 'Fazer Login';
+      registerFields.classList.remove('hidden');
     }
     lucide.createIcons();
   });
@@ -54,11 +63,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const email = emailInput.value.trim();
     const password = passInput.value.trim();
+    const fullName = nameInput.value.trim();
     
     if (!email || !password) return;
 
     const originalBtnContent = authBtn.innerHTML;
-    authBtn.innerHTML = '<span>Aguarde um momento...</span>';
+    authBtn.innerHTML = '<span>Processando...</span>';
     authBtn.disabled = true;
 
     if (isLoginMode) {
@@ -69,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       if (error) {
-        errorBox.textContent = 'Falha na autenticação: ' + error.message;
+        errorBox.textContent = 'Credenciais inválidas: ' + error.message;
         errorBox.style.display = 'block';
         authBtn.innerHTML = originalBtnContent;
         authBtn.disabled = false;
@@ -80,16 +90,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       // ===== CADASTRO =====
       const { data, error } = await supabaseAuthClient.auth.signUp({
         email: email,
-        password: password
+        password: password,
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
       });
 
       if (error) {
-        errorBox.textContent = 'Falha ao criar conta: ' + error.message;
+        errorBox.textContent = 'Falha ao processar cadastro: ' + error.message;
         errorBox.style.display = 'block';
         authBtn.innerHTML = originalBtnContent;
         authBtn.disabled = false;
       } else {
-        successBox.textContent = 'Conta criada com sucesso! Redirecionando para o seu Dashboard...';
+        // Se cadastrou nome, salva no localStorage para saudação imediata
+        if (fullName) localStorage.setItem('scaley_username', fullName);
+        
+        successBox.textContent = 'Bem-vindo ao Scaley! Sua conta foi ativada com sucesso.';
         successBox.style.display = 'block';
         setTimeout(() => {
           window.location.href = 'index.html';
