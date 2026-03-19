@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão Scaley — Sistema de Gestão Pessoal</title>
+  <meta name="description" content="Sistema de gestão pessoal e profissional com múltiplos workspaces">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/financeiro.css">
+  <link rel="stylesheet" href="css/projetos.css">
+  <link rel="stylesheet" href="css/clientes.css">
+  <link rel="stylesheet" href="css/estudos.css">
+</head>
+<body>
+  <div id="app">
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">
+          <i data-lucide="zap"></i>
+        </div>
+        <div class="logo-text">
+          <h1>Scaley</h1>
+          <span>Gestão Pessoal</span>
+        </div>
+      </div>
+
+      <!-- Workspace Selector -->
+      <div class="workspace-selector">
+        <div class="workspace-current" id="workspace-toggle">
+          <span class="ws-color" id="ws-current-color" style="background: #7c5cfc;"></span>
+          <span class="ws-name" id="ws-current-name">Pessoal</span>
+          <i data-lucide="chevron-down" class="ws-chevron"></i>
+        </div>
+        <div class="workspace-dropdown" id="workspace-dropdown">
+          <div id="workspace-list"></div>
+          <div class="workspace-add" id="add-workspace-btn">
+            <i data-lucide="plus"></i>
+            <span>Novo Workspace</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Menu</div>
+        <div class="nav-item active" data-page="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </div>
+        <div class="nav-item" data-page="financeiro">
+          <i data-lucide="wallet"></i>
+          <span>Financeiro</span>
+        </div>
+        <div class="nav-item" data-page="projetos">
+          <i data-lucide="kanban"></i>
+          <span>Projetos</span>
+        </div>
+        <div class="nav-item" data-page="clientes">
+          <i data-lucide="users"></i>
+          <span>Clientes</span>
+        </div>
+        <div class="nav-item" data-page="estudos">
+          <i data-lucide="book-open"></i>
+          <span>Estudos</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="nav-item" id="settings-btn">
+          <i data-lucide="settings"></i>
+          <span>Configurações</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content">
+
+      <!-- ======== DASHBOARD ======== -->
+      <section class="page-section active" id="page-dashboard">
+        <div class="page-container">
+          <div class="welcome-section">
+            <h2>Bem-vindo, <span id="welcome-name">Usuário</span> 👋</h2>
+            <p id="welcome-date"></p>
+          </div>
+
+          <div class="stats-grid" id="dashboard-stats"></div>
+
+          <div class="dashboard-grid">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Receita vs Despesa</div>
+                  <div class="card-subtitle">Últimos 6 meses</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="finance-chart"></canvas>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Ações Rápidas</div>
+              </div>
+              <div class="quick-actions">
+                <button class="quick-action-btn" data-action="add-transaction">
+                  <i data-lucide="plus-circle"></i>
+                  <span>Nova Transação</span>
+                </button>
+                <button class="quick-action-btn" data-action="add-project">
+                  <i data-lucide="folder-plus"></i>
+                  <span>Novo Projeto</span>
+                </button>
+                <button class="quick-action-btn" data-action="add-client">
+                  <i data-lucide="user-plus"></i>
+                  <span>Novo Cliente</span>
+                </button>
+                <button class="quick-action-btn" data-action="add-task">
+                  <i data-lucide="list-plus"></i>
+                  <span>Nova Tarefa</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="card full-width">
+              <div class="card-header">
+                <div class="card-title">Atividade Recente</div>
+              </div>
+              <div class="activity-list" id="activity-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======== FINANCEIRO ======== -->
+      <section class="page-section" id="page-financeiro">
+        <div class="page-container">
+          <div class="page-header">
+            <div>
+              <h1>Financeiro</h1>
+              <p>Gerencie suas receitas e despesas</p>
+            </div>
+            <button class="btn btn-primary" id="add-transaction-btn">
+              <i data-lucide="plus"></i>
+              Nova Transação
+            </button>
+          </div>
+
+          <div class="finance-summary" id="finance-summary"></div>
+
+          <div class="finance-filters">
+            <div class="filter-group">
+              <label>Mês:</label>
+              <select id="filter-month"></select>
+            </div>
+            <div class="filter-group">
+              <label>Ano:</label>
+              <select id="filter-year"></select>
+            </div>
+            <div class="filter-group">
+              <label>Tipo:</label>
+              <select id="filter-type">
+                <option value="todos">Todos</option>
+                <option value="receita">Receitas</option>
+                <option value="despesa">Despesas</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="table" id="transactions-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Descrição</th>
+                  <th>Categoria</th>
+                  <th>Tipo</th>
+                  <th>Valor</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="transactions-body"></tbody>
+            </table>
+          </div>
+          <div class="empty-state hidden" id="transactions-empty">
+            <i data-lucide="receipt"></i>
+            <h3>Nenhuma transação encontrada</h3>
+            <p>Adicione sua primeira receita ou despesa</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======== PROJETOS ======== -->
+      <section class="page-section" id="page-projetos">
+        <div class="page-container">
+          <div class="page-header">
+            <div>
+              <h1>Projetos</h1>
+              <p>Organize seus projetos com Kanban</p>
+            </div>
+            <button class="btn btn-primary" id="add-project-btn">
+              <i data-lucide="plus"></i>
+              Novo Projeto
+            </button>
+          </div>
+          
+          <div class="projects-filters" style="margin-bottom: var(--space-4); display: flex; gap: var(--space-4);">
+            <div class="filter-group" style="display: flex; flex-direction: column; gap: var(--space-2); min-width: 200px;">
+              <label style="font-size: var(--font-size-xs); color: var(--text-secondary);">Filtrar por Etiqueta:</label>
+              <select id="filter-project-tag" style="background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); font-size: var(--font-size-sm); width: 100%;">
+                <option value="todas">Todas as Etiquetas</option>
+              </select>
+            </div>
+          </div>
+          <div class="kanban-board" id="kanban-board">
+            <div class="kanban-column" data-status="todo">
+              <div class="kanban-column-header">
+                <div class="column-title">
+                  <span style="color: var(--color-info);">●</span> A Fazer
+                </div>
+                <span class="column-count" id="count-todo">0</span>
+              </div>
+              <div class="kanban-column-body" id="col-todo"></div>
+            </div>
+            <div class="kanban-column" data-status="doing">
+              <div class="kanban-column-header">
+                <div class="column-title">
+                  <span style="color: var(--color-warning);">●</span> Em Andamento
+                </div>
+                <span class="column-count" id="count-doing">0</span>
+              </div>
+              <div class="kanban-column-body" id="col-doing"></div>
+            </div>
+            <div class="kanban-column" data-status="done">
+              <div class="kanban-column-header">
+                <div class="column-title">
+                  <span style="color: var(--color-success);">●</span> Concluído
+                </div>
+                <span class="column-count" id="count-done">0</span>
+              </div>
+              <div class="kanban-column-body" id="col-done"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======== CLIENTES ======== -->
+      <section class="page-section" id="page-clientes">
+        <div class="page-container">
+          <div class="page-header">
+            <div>
+              <h1>Clientes</h1>
+              <p>Gerencie seus contatos e clientes</p>
+            </div>
+            <button class="btn btn-primary" id="add-client-btn">
+              <i data-lucide="plus"></i>
+              Novo Cliente
+            </button>
+          </div>
+          <div class="toolbar">
+            <div class="search-bar">
+              <i data-lucide="search"></i>
+              <input type="text" id="client-search" placeholder="Buscar clientes...">
+            </div>
+          </div>
+          <div class="clients-grid" id="clients-grid"></div>
+          <div class="empty-state hidden" id="clients-empty">
+            <i data-lucide="users"></i>
+            <h3>Nenhum cliente cadastrado</h3>
+            <p>Adicione seu primeiro cliente</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======== ESTUDOS ======== -->
+      <section class="page-section" id="page-estudos">
+        <div class="page-container">
+          <div class="page-header">
+            <div>
+              <h1>Estudos & Tarefas</h1>
+              <p>Organize suas tarefas, livros, cursos e metas</p>
+            </div>
+            <div class="page-header-actions" id="estudos-action-btns">
+              <button class="btn btn-primary" id="add-task-btn">
+                <i data-lucide="plus"></i>
+                Nova Tarefa
+              </button>
+            </div>
+          </div>
+
+          <div class="estudos-header-stats" id="estudos-stats"></div>
+
+          <div class="progress-overview">
+            <div class="progress-info">
+              <span>Progresso Geral</span>
+              <strong id="progress-percent">0%</strong>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <!-- Sub-tabs para cada tipo -->
+          <div class="toolbar">
+            <div class="tabs" id="estudos-main-tabs">
+              <button class="tab-btn active" data-subtab="tarefas">
+                <i data-lucide="list-checks" style="width:14px;height:14px;"></i> Tarefas
+              </button>
+              <button class="tab-btn" data-subtab="livros">
+                <i data-lucide="book-open" style="width:14px;height:14px;"></i> Livros
+              </button>
+              <button class="tab-btn" data-subtab="cursos">
+                <i data-lucide="graduation-cap" style="width:14px;height:14px;"></i> Cursos
+              </button>
+              <button class="tab-btn" data-subtab="metas">
+                <i data-lucide="target" style="width:14px;height:14px;"></i> Metas
+              </button>
+            </div>
+          </div>
+
+          <!-- ========= Tarefas ========= -->
+          <div class="estudos-subtab-content active" id="subtab-tarefas">
+            <div class="toolbar">
+              <div class="tabs" id="task-tabs">
+                <button class="tab-btn active" data-filter="todos">Todos</button>
+                <button class="tab-btn" data-filter="pendente">Pendentes</button>
+                <button class="tab-btn" data-filter="concluido">Concluídos</button>
+              </div>
+            </div>
+            <div class="task-list" id="task-list"></div>
+            <div class="empty-state hidden" id="tasks-empty">
+              <i data-lucide="list-checks"></i>
+              <h3>Nenhuma tarefa encontrada</h3>
+              <p>Adicione sua primeira tarefa ou estudo</p>
+            </div>
+          </div>
+
+          <!-- ========= Livros ========= -->
+          <div class="estudos-subtab-content" id="subtab-livros">
+            <div class="books-grid" id="books-grid"></div>
+            <div class="empty-state hidden" id="books-empty">
+              <i data-lucide="book-open"></i>
+              <h3>Nenhum livro cadastrado</h3>
+              <p>Adicione um livro para acompanhar sua leitura</p>
+            </div>
+          </div>
+
+          <!-- ========= Cursos ========= -->
+          <div class="estudos-subtab-content" id="subtab-cursos">
+            <div class="courses-list" id="courses-list"></div>
+            <div class="empty-state hidden" id="courses-empty">
+              <i data-lucide="graduation-cap"></i>
+              <h3>Nenhum curso cadastrado</h3>
+              <p>Adicione um curso para acompanhar seu progresso</p>
+            </div>
+          </div>
+
+          <!-- ========= Metas ========= -->
+          <div class="estudos-subtab-content" id="subtab-metas">
+            <div class="goals-list" id="goals-list"></div>
+            <div class="empty-state hidden" id="goals-empty">
+              <i data-lucide="target"></i>
+              <h3>Nenhuma meta cadastrada</h3>
+              <p>Defina suas metas e acompanhe o progresso</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===== MODAIS ===== -->
+
+  <!-- Modal Transação -->
+  <div class="modal-overlay" id="modal-transaction">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-transaction-title">Nova Transação</h2>
+        <button class="modal-close" onclick="closeModal('modal-transaction')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form-transaction">
+          <div class="form-group">
+            <label>Descrição</label>
+            <input type="text" id="tr-description" placeholder="Ex: Salário, Aluguel..." required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Valor (R$)</label>
+              <input type="number" id="tr-value" step="0.01" min="0" placeholder="0,00" required>
+            </div>
+            <div class="form-group">
+              <label>Tipo</label>
+              <select id="tr-type">
+                <option value="receita">Receita</option>
+                <option value="despesa">Despesa</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Data</label>
+              <input type="date" id="tr-date" required>
+            </div>
+            <div class="form-group">
+              <label>Categoria</label>
+              <select id="tr-category">
+                <option value="salario">Salário</option>
+                <option value="freelance">Freelance</option>
+                <option value="investimento">Investimento</option>
+                <option value="alimentacao">Alimentação</option>
+                <option value="transporte">Transporte</option>
+                <option value="moradia">Moradia</option>
+                <option value="educacao">Educação</option>
+                <option value="lazer">Lazer</option>
+                <option value="saude">Saúde</option>
+                <option value="outros">Outros</option>
+              </select>
+            </div>
+          </div>
+          <input type="hidden" id="tr-id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-transaction')">Cancelar</button>
+        <button class="btn btn-primary" id="save-transaction-btn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Projeto -->
+  <div class="modal-overlay" id="modal-project">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-project-title">Novo Projeto</h2>
+        <button class="modal-close" onclick="closeModal('modal-project')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form-project">
+          <div class="form-group">
+            <label>Nome do Projeto</label>
+            <input type="text" id="pj-name" placeholder="Ex: Redesign do Site" required>
+          </div>
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea id="pj-description" placeholder="Descreva o projeto..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prazo</label>
+              <input type="date" id="pj-deadline">
+            </div>
+            <div class="form-group">
+              <label>Prioridade</label>
+              <select id="pj-priority">
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Cliente</label>
+            <select id="pj-client">
+              <option value="">Nenhum</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Etiquetas (separadas por vírgula)</label>
+            <input type="text" id="pj-tags" placeholder="Ex: design, react, uerj">
+          </div>
+          <input type="hidden" id="pj-id">
+          <input type="hidden" id="pj-status" value="todo">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-project')">Cancelar</button>
+        <button class="btn btn-primary" id="save-project-btn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cliente -->
+  <div class="modal-overlay" id="modal-client">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-client-title">Novo Cliente</h2>
+        <button class="modal-close" onclick="closeModal('modal-client')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form-client">
+          <div class="form-group">
+            <label>Nome</label>
+            <input type="text" id="cl-name" placeholder="Nome do cliente" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="cl-email" placeholder="email@exemplo.com">
+            </div>
+            <div class="form-group">
+              <label>Telefone</label>
+              <input type="text" id="cl-phone" placeholder="(11) 99999-9999">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Empresa</label>
+            <input type="text" id="cl-company" placeholder="Nome da empresa">
+          </div>
+          <div class="form-group">
+            <label>Notas</label>
+            <textarea id="cl-notes" placeholder="Observações sobre o cliente..."></textarea>
+          </div>
+          <input type="hidden" id="cl-id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-client')">Cancelar</button>
+        <button class="btn btn-primary" id="save-client-btn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Tarefa -->
+  <div class="modal-overlay" id="modal-task">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-task-title">Nova Tarefa</h2>
+        <button class="modal-close" onclick="closeModal('modal-task')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form-task">
+          <div class="form-group">
+            <label>Título</label>
+            <input type="text" id="tk-title" placeholder="Ex: Estudar JavaScript" required>
+          </div>
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea id="tk-description" placeholder="Detalhes da tarefa..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prazo</label>
+              <input type="date" id="tk-deadline">
+            </div>
+            <div class="form-group">
+              <label>Prioridade</label>
+              <select id="tk-priority">
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+              </select>
+            </div>
+          </div>
+          <input type="hidden" id="tk-id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-task')">Cancelar</button>
+        <button class="btn btn-primary" id="save-task-btn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Livro -->
+  <div class="modal-overlay" id="modal-book">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-book-title">Novo Livro</h2>
+        <button class="modal-close" onclick="closeModal('modal-book')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form-book">
+          <div class="form-group">
+            <label>Capa do Livro</label>
+            <div class="book-cover-upload" id="bk-cover-area">
+              <input type="file" id="bk-cover-input" accept="image/*" style="display:none;">
+              <div class="cover-preview" id="bk-cover-preview">
+                <i data-lucide="image-plus"></i>
+                <span>Clique para adicionar capa</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Título do Livro</label>
+            <input type="text" id="bk-title" placeholder="Ex: Clean Code" required>
+          </div>
+          <div class="form-group">
+            <label>Autor</label>
+            <input type="text" id="bk-author" placeholder="Ex: Robert C. Martin">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Total de Páginas</label>
+              <input type="number" id="bk-total-pages" min="1" placeholder="350" required>
+            </div>
+            <div class="form-group">
+              <label>Meta de Páginas/Dia</label>
+              <input type="number" id="bk-pages-per-day" min="1" placeholder="20" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Páginas Já Lidas</label>
+              <input type="number" id="bk-pages-read" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label>Categoria</label>
+              <select id="bk-category">
+                <option value="tecnologia">Tecnologia</option>
+                <option value="negocios">Negócios</option>
+                <option value="autodesenvolvimento">Autodesenvolvimento</option>
+                <option value="ficção">Ficção</option>
+                <option value="outros">Outros</option>
+              </select>
+            </div>
+          </div>
+          <input type="hidden" id="bk-id">
+          <input type="hidden" id="bk-cover-data">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-book')">Cancelar</button>
+        <button class="btn btn-primary" id="save-book-btn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Registrar Leitura -->
+  <div class="modal-overlay" id="modal-reading">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2>Registrar Leitura</h2>
+        <button class="modal-close" onclick="closeModal('modal-reading')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form-reading">
+          <div class="form-group">
+            <label>Quantas páginas você leu hoje?</label>
+            <input type="number" id="rd-pages" min="1" placeholder="20" required>
+          </div>
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="rd-date">
+          </div>
+          <input type="hidden" id="rd-book-id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-reading')">Cancelar</button>
+        <button class="btn btn-primary" id="save-reading-btn">Registrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Curso -->
+  <div class="modal-overlay" id="modal-course">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-course-title">Novo Curso</h2>
+        <button class="modal-close" onclick="closeModal('modal-course')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form-course">
+          <div class="form-group">
+            <label>Nome do Curso</label>
+            <input type="text" id="cs-name" placeholder="Ex: React Completo" required>
+          </div>
+          <div class="form-group">
+            <label>Plataforma</label>
+            <input type="text" id="cs-platform" placeholder="Ex: Udemy, Alura, YouTube">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Total de Aulas</label>
+              <input type="number" id="cs-total-lessons" min="1" placeholder="120" required>
+            </div>
+            <div class="form-group">
+              <label>Aulas Concluídas</label>
+              <input type="number" id="cs-completed-lessons" min="0" value="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Link do Curso</label>
+            <input type="url" id="cs-link" placeholder="https://...">
+          </div>
+          <input type="hidden" id="cs-id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-course')">Cancelar</button>
+        <button class="btn btn-primary" id="save-course-btn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Meta -->
+  <div class="modal-overlay" id="modal-goal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-goal-title">Nova Meta</h2>
+        <button class="modal-close" onclick="closeModal('modal-goal')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form-goal">
+          <div class="form-group">
+            <label>Título da Meta</label>
+            <input type="text" id="gl-title" placeholder="Ex: Ler 12 livros no ano" required>
+          </div>
+          <div class="form-group">
+            <label>Descrição</label>
+            <textarea id="gl-description" placeholder="Detalhes da meta..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Valor Alvo</label>
+              <input type="number" id="gl-target" min="1" placeholder="12" required>
+            </div>
+            <div class="form-group">
+              <label>Progresso Atual</label>
+              <input type="number" id="gl-current" min="0" value="0">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Unidade</label>
+              <input type="text" id="gl-unit" placeholder="Ex: livros, cursos, horas">
+            </div>
+            <div class="form-group">
+              <label>Prazo</label>
+              <input type="date" id="gl-deadline">
+            </div>
+          </div>
+          <input type="hidden" id="gl-id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-goal')">Cancelar</button>
+        <button class="btn btn-primary" id="save-goal-btn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Workspace -->
+  <div class="modal-overlay" id="modal-workspace">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Novo Workspace</h2>
+        <button class="modal-close" onclick="closeModal('modal-workspace')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form-workspace">
+          <div class="form-group">
+            <label>Nome do Workspace</label>
+            <input type="text" id="ws-name" placeholder="Ex: Freelance, Faculdade..." required>
+          </div>
+          <div class="form-group">
+            <label>Cor</label>
+            <input type="color" id="ws-color" value="#7c5cfc" style="height: 40px; padding: 4px;">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-workspace')">Cancelar</button>
+        <button class="btn btn-primary" id="save-workspace-btn">Criar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirmar exclusão -->
+  <div class="modal-overlay" id="modal-confirm">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2>Confirmar</h2>
+        <button class="modal-close" onclick="closeModal('modal-confirm')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-dialog">
+          <p id="confirm-message">Tem certeza que deseja excluir este item?</p>
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="closeModal('modal-confirm')">Cancelar</button>
+            <button class="btn btn-danger" id="confirm-action-btn">Excluir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/sidebar.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/financeiro.js"></script>
+  <script src="js/projetos.js"></script>
+  <script src="js/clientes.js"></script>
+  <script src="js/estudos.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+/* ===== FINANCEIRO ===== */
+.finance-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.finance-summary .summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  backdrop-filter: blur(12px);
+}
+
+.finance-summary .summary-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
+}
+
+.finance-summary .summary-value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.finance-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.finance-filters select {
+  width: auto;
+  min-width: 120px;
+}
+
+.finance-filters .filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.finance-filters .filter-group label {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* Transaction type indicator */
+.type-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.type-indicator::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.type-indicator.receita::before {
+  background: var(--color-success);
+}
+
+.type-indicator.despesa::before {
+  background: var(--color-danger);
+}
+
+/* Category tag */
+.category-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
