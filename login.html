@@ -134,24 +134,14 @@
     }
 
     .logo-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
       margin-bottom: var(--space-12);
-      align-self: flex-start; /* Alinhado estritamente à esquerda */
+      align-self: flex-start;
     }
 
-    .logo-header i {
-      color: var(--accent-primary);
-      width: 28px;
-      height: 28px;
-    }
-
-    .logo-header span {
-      font-family: var(--auth-font);
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
+    .logo-header img {
+      height: 38px; /* Tamanho proporcional para o login */
+      width: auto;
+      display: block;
     }
 
     .auth-title-section {
@@ -192,7 +182,8 @@
       position: relative;
     }
 
-    .floating-input i {
+    .floating-input i, 
+    .floating-input svg {
       position: absolute;
       left: 16px;
       top: 50%;
@@ -201,6 +192,7 @@
       height: 18px;
       color: var(--text-tertiary);
       transition: color 0.3s;
+      pointer-events: none; /* Evita que o ícone intercepte o clique no input */
     }
 
     .floating-input input {
@@ -222,7 +214,8 @@
       outline: none;
     }
 
-    .floating-input input:focus + i {
+    .floating-input input:focus + i,
+    .floating-input input:focus + svg {
       color: var(--accent-primary);
     }
 
@@ -336,8 +329,7 @@
       <div class="form-container">
         
         <div class="logo-header">
-          <i data-lucide="layers"></i>
-          <span>Gestão Scaley</span>
+          <img src="Logo/logo.png" alt="Scaley Logo">
         </div>
 
         <div class="auth-title-section">
