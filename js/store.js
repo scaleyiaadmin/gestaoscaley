@@ -404,5 +404,21 @@ const Store = {
 
   setUserName(name) {
     localStorage.setItem('scaley_username', name);
+  },
+
+  // Gerenciamento de Alertas Descartados
+  dismissAlert(alertId) {
+    const key = 'scaley_dismissed_alerts';
+    const dismissed = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!dismissed.includes(alertId)) {
+      dismissed.push(alertId);
+      localStorage.setItem(key, JSON.stringify(dismissed));
+    }
+  },
+
+  isAlertDismissed(alertId) {
+    const key = 'scaley_dismissed_alerts';
+    const dismissed = JSON.parse(localStorage.getItem(key) || '[]');
+    return dismissed.includes(alertId);
   }
 };
