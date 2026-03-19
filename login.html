@@ -3,115 +3,233 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Gestão Scaley</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <title>Acesso - Gestão Scaley</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  
   <script src="https://unpkg.com/lucide@latest"></script>
+  
   <style>
     body {
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: var(--bg-main);
-      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at top right, rgba(124, 92, 252, 0.15), transparent),
+                  radial-gradient(circle at bottom left, rgba(76, 201, 240, 0.1), transparent),
+                  var(--bg-primary);
     }
-    .auth-container {
-      background: var(--bg-card);
-      padding: 2.5rem;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-color);
+
+    .auth-layout {
       width: 100%;
-      max-width: 400px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      text-align: center;
+      max-width: 440px;
+      padding: var(--space-6);
+      animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .auth-logo {
+
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-xl);
+      padding: var(--space-10) var(--space-8);
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: var(--space-10);
+    }
+
+    .logo-glow {
+      width: 64px;
+      height: 64px;
+      background: var(--accent-primary-soft);
+      border-radius: var(--radius-lg);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      margin-bottom: 2rem;
-    }
-    .auth-logo i {
+      margin: 0 auto var(--space-6);
       color: var(--accent-primary);
-      width: 32px;
-      height: 32px;
+      box-shadow: 0 8px 16px rgba(124, 92, 252, 0.2);
     }
-    .auth-logo h1 {
-      font-size: 24px;
-      color: var(--text-primary);
+
+    .auth-header h1 {
+      font-size: var(--font-size-2xl);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: var(--space-2);
+      background: #fff;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-image: linear-gradient(to bottom, #fff, #8a8a9a);
     }
-    .auth-form {
-      text-align: left;
+
+    .auth-header p {
+      color: var(--text-secondary);
+      font-size: var(--font-size-base);
     }
-    .auth-error {
-      color: var(--color-danger);
-      background: rgba(248, 113, 113, 0.1);
-      border-left: 3px solid var(--color-danger);
-      padding: 10px;
-      font-size: 13px;
-      margin-bottom: 1rem;
-      border-radius: var(--radius-sm);
-      display: none;
+
+    .form-group label {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
     }
-    .auth-success {
-      color: var(--color-success);
-      background: rgba(74, 222, 128, 0.1);
-      border-left: 3px solid var(--color-success);
-      padding: 10px;
-      font-size: 13px;
-      margin-bottom: 1rem;
-      border-radius: var(--radius-sm);
-      display: none;
+
+    .input-wrapper {
+      position: relative;
     }
-    .auth-toggle {
-      margin-top: 1.5rem;
-      font-size: 13px;
+
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: var(--text-tertiary);
+      transition: color var(--transition-fast);
+    }
+
+    .input-wrapper input {
+      padding-left: 44px;
+      height: 48px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      font-size: var(--font-size-base);
+    }
+
+    .input-wrapper input:focus {
+      border-color: var(--accent-primary);
+      background: var(--bg-input-focus);
+    }
+
+    .input-wrapper input:focus + i {
+      color: var(--accent-primary);
+    }
+
+    .auth-footer {
+      margin-top: var(--space-8);
+      text-align: center;
+      font-size: var(--font-size-sm);
       color: var(--text-secondary);
     }
-    .auth-toggle a {
+
+    .auth-footer a {
+      font-weight: 600;
       color: var(--accent-primary);
-      cursor: pointer;
-      text-decoration: none;
-      font-weight: 500;
     }
-    .auth-toggle a:hover {
-      text-decoration: underline;
+
+    .auth-error, .auth-success {
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--space-6);
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .auth-error {
+      background: var(--color-danger-soft);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      color: var(--color-danger);
+    }
+
+    .auth-success {
+      background: var(--color-success-soft);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      color: var(--color-success);
+    }
+
+    #auth-btn {
+      width: 100%;
+      height: 48px;
+      justify-content: center;
+      font-size: var(--font-size-md);
+      margin-top: var(--space-2);
+    }
+
+    /* Background decoration */
+    .bg-blob {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      filter: blur(120px);
+      opacity: 0.05;
+      z-index: -1;
     }
   </style>
 </head>
 <body>
 
-  <div class="auth-container">
-    <div class="auth-logo">
-      <i data-lucide="layers"></i>
-      <h1>Gestão Scaley</h1>
-    </div>
+  <div class="bg-blob" style="top: -100px; right: -100px;"></div>
+  <div class="bg-blob" style="bottom: -100px; left: -100px; background: var(--accent-secondary);"></div>
 
-    <!-- MENSAGENS -->
-    <div class="auth-error" id="auth-error"></div>
-    <div class="auth-success" id="auth-success"></div>
-
-    <form class="auth-form" id="auth-form">
-      <div class="form-group">
-        <label>E-mail</label>
-        <input type="email" id="auth-email" placeholder="seu@email.com" required>
+  <div class="auth-layout">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo-glow">
+          <i data-lucide="layers" style="width: 32px; height: 32px;"></i>
+        </div>
+        <h1 id="auth-title">Gestão Scaley</h1>
+        <p id="auth-subtitle">Entre com suas credenciais para continuar</p>
       </div>
-      <div class="form-group">
-        <label>Senha</label>
-        <input type="password" id="auth-pass" placeholder="••••••••" required>
+
+      <div class="auth-error" id="auth-error"></div>
+      <div class="auth-success" id="auth-success"></div>
+
+      <form id="auth-form">
+        <div class="form-group">
+          <label for="auth-email">E-mail Corporativo</label>
+          <div class="input-wrapper">
+            <i data-lucide="mail"></i>
+            <input type="email" id="auth-email" placeholder="exemplo@scaley.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-8);">
+          <label for="auth-pass">Sua Senha</label>
+          <div class="input-wrapper">
+            <i data-lucide="lock"></i>
+            <input type="password" id="auth-pass" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="auth-btn">
+          <span>Acessar Dashboard</span>
+          <i data-lucide="arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <span id="toggle-text">Não tem uma conta corporativa?</span>
+        <a href="#" id="toggle-auth-mode">Solicitar Acesso</a>
       </div>
-      
-      <!-- Checkbox de "Manter Logado" etc poderia vir aqui -->
-
-      <button type="submit" class="btn btn-primary" id="auth-btn" style="width: 100%; justify-content: center; margin-top: 1rem; height: 44px; font-size: 15px;">
-        Entrar no Sistema
-      </button>
-    </form>
-
-    <div class="auth-toggle" id="auth-toggle-box">
-      Não tem uma conta? <a id="toggle-auth-mode">Criar agora</a>
     </div>
   </div>
 

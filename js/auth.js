@@ -17,33 +17,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = 'index.html';
   }
 
-  const form = document.getElementById('auth-form');
-  const toggleBtn = document.getElementById('toggle-auth-mode');
+  const title = document.getElementById('auth-title');
+  const subtitle = document.getElementById('auth-subtitle');
+  const toggleText = document.getElementById('toggle-text');
   const authBtn = document.getElementById('auth-btn');
-  const errorBox = document.getElementById('auth-error');
-  const successBox = document.getElementById('auth-success');
-  const emailInput = document.getElementById('auth-email');
-  const passInput = document.getElementById('auth-pass');
-
+  const toggleBtn = document.getElementById('toggle-auth-mode');
+  
   // Alternar entre Login e Cadastro
-  toggleBtn.addEventListener('click', () => {
+  toggleBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     isLoginMode = !isLoginMode;
     errorBox.style.display = 'none';
     successBox.style.display = 'none';
     
     if (isLoginMode) {
-      authBtn.textContent = 'Entrar no Sistema';
-      document.getElementById('auth-toggle-box').innerHTML = 'Não tem uma conta? <a href="#" id="toggle-auth-mode">Criar agora</a>';
+      title.textContent = 'Gestão Scaley';
+      subtitle.textContent = 'Entre com suas credenciais para continuar';
+      authBtn.innerHTML = '<span>Acessar Dashboard</span> <i data-lucide="arrow-right"></i>';
+      toggleText.textContent = 'Não tem uma conta corporativa?';
+      toggleBtn.textContent = 'Solicitar Acesso';
     } else {
-      authBtn.textContent = 'Criar minha Conta';
-      document.getElementById('auth-toggle-box').innerHTML = 'Já possui uma conta? <a href="#" id="toggle-auth-mode">Fazer login</a>';
+      title.textContent = 'Criar Conta';
+      subtitle.textContent = 'Preencha os dados para começar sua gestão';
+      authBtn.innerHTML = '<span>Criar minha Conta</span> <i data-lucide="user-plus"></i>';
+      toggleText.textContent = 'Já possui uma conta?';
+      toggleBtn.textContent = 'Fazer Login';
     }
-
-    // Reatar o evento do novo <a> gerado pelo innerHTML
-    document.getElementById('toggle-auth-mode').addEventListener('click', (e) => {
-      e.preventDefault();
-      toggleBtn.click();
-    });
+    lucide.createIcons();
   });
 
   // Listener principal do form
@@ -57,7 +57,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (!email || !password) return;
 
-    authBtn.textContent = 'Aguarde...';
+    const originalBtnContent = authBtn.innerHTML;
+    authBtn.innerHTML = '<span>Aguarde um momento...</span>';
     authBtn.disabled = true;
 
     if (isLoginMode) {
@@ -68,12 +69,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       if (error) {
-        errorBox.textContent = 'Erro ao entrar: ' + error.message;
+        errorBox.textContent = 'Falha na autenticação: ' + error.message;
         errorBox.style.display = 'block';
-        authBtn.textContent = 'Entrar no Sistema';
+        authBtn.innerHTML = originalBtnContent;
         authBtn.disabled = false;
       } else {
-        // Sucesso
         window.location.href = 'index.html';
       }
     } else {
@@ -84,12 +84,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       if (error) {
-        errorBox.textContent = 'Erro ao cadastrar: ' + error.message;
+        errorBox.textContent = 'Falha ao criar conta: ' + error.message;
         errorBox.style.display = 'block';
-        authBtn.textContent = 'Criar minha Conta';
+        authBtn.innerHTML = originalBtnContent;
         authBtn.disabled = false;
       } else {
-        successBox.textContent = 'Conta criada com sucesso! Redirecionando...';
+        successBox.textContent = 'Conta criada com sucesso! Redirecionando para o seu Dashboard...';
         successBox.style.display = 'block';
         setTimeout(() => {
           window.location.href = 'index.html';
