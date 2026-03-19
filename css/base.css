@@ -151,21 +151,6 @@ textarea {
     padding: var(--space-4); /* Menos padding no mobile para ganhar espaço */
   }
 
-  /* Estilo do botão de fechar interno */
-  .close-sidebar-mobile {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    background: var(--bg-input);
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    position: absolute;
-    right: 16px;
-    top: 24px;
-  }
-
   .mobile-header {
     display: flex !important;
     align-items: center;
