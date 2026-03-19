@@ -32,6 +32,7 @@ const Sidebar = {
       case 'financeiro': Financeiro.render(); break;
       case 'projetos': Projetos.render(); break;
       case 'clientes': Clientes.render(); break;
+      case 'cobrancas': Cobrancas.render(); break;
       case 'estudos': Estudos.render(); break;
       case 'backlog': Backlog.render(); break;
     }
