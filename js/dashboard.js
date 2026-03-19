@@ -7,17 +7,22 @@ const Dashboard = {
     this.renderWelcome();
     this.renderMrrAlerts();
     this.renderStats();
+    this.renderQuickActions();
     this.renderChart();
     this.renderActivities();
     this.bindQuickActions();
   },
 
   renderMrrAlerts() {
+    const ws = Store.getActiveWorkspace();
     const clients = Store.getAll('clients').filter(c => parseFloat(c.mrr) > 0);
     const fixedExpenses = Store.getAll('fixed_expenses');
     const container = document.getElementById('dashboard-mrr-alerts');
     if (!container) return;
     
+    // Alertas de MRR so fazem sentido em Enterprise
+    const canShowMrr = ws.type === 'enterprise';
+
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
@@ -33,48 +38,46 @@ const Dashboard = {
 
     const alerts = [];
 
-    // Helper para verificar se é hoje ou ontem
     const isTodayOrYesterday = (day) => {
       if (day === currentDay) return true;
       if (day === currentDay - 1) return true;
-      // Tratamento básico para virada de mês: se hoje é dia 1, ontem foi o último dia do mês anterior (28-31)
       if (currentDay === 1 && day >= 28) return true; 
       return false;
     };
 
-    // MRR
-    clients.forEach(c => {
-      const alertId = `alert-mrr-${c.id}-${currentMonth}-${currentYear}`;
-      if (Store.isAlertDismissed(alertId)) return;
+    // MRR (Só se for Enterprise)
+    if (canShowMrr) {
+      clients.forEach(c => {
+        const alertId = `alert-mrr-${c.id}-${currentMonth}-${currentYear}`;
+        if (Store.isAlertDismissed(alertId)) return;
 
-      const isPaid = monthTx.some(t => t.mrrClientId === c.id);
-      if (!isPaid) {
-        const dueDay = parseInt(c.dueDay) || 1;
-        
-        // Só mostra se for HOJE ou ONTEM
-        if (isTodayOrYesterday(dueDay) && currentDay >= dueDay) {
-          alerts.push(`
-            <div style="background: rgba(248, 113, 113, 0.1); border-left: 4px solid var(--color-danger); padding: 12px 16px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <i data-lucide="alert-circle" style="color: var(--color-danger); width: 20px; height: 20px;"></i>
-                <div>
-                  <strong style="color: var(--text-primary); font-size: 14px;">MRR Pendente: ${c.company || c.name}</strong>
-                  <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Venceu dia ${dueDay} (R$ ${parseFloat(c.mrr).toFixed(2)})</div>
+        const isPaid = monthTx.some(t => t.mrrClientId === c.id);
+        if (!isPaid) {
+          const dueDay = parseInt(c.dueDay) || 1;
+          if (isTodayOrYesterday(dueDay) && currentDay >= dueDay) {
+            alerts.push(`
+              <div style="background: rgba(248, 113, 113, 0.1); border-left: 4px solid var(--color-danger); padding: 12px 16px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <i data-lucide="alert-circle" style="color: var(--color-danger); width: 20px; height: 20px;"></i>
+                  <div>
+                    <strong style="color: var(--text-primary); font-size: 14px;">MRR Pendente: ${c.company || c.name}</strong>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Venceu dia ${dueDay} (R$ ${parseFloat(c.mrr).toFixed(2)})</div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px; background: transparent;" onclick="document.querySelector('[data-page=cobrancas]').click()">Cobrar</button>
+                  <button class="btn-icon" style="opacity: 0.6; padding: 4px;" onclick="Dashboard.dismissAlert('${alertId}')">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                  </button>
                 </div>
               </div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <button class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px; background: transparent;" onclick="document.querySelector('[data-page=cobrancas]').click()">Cobrar</button>
-                <button class="btn-icon" style="opacity: 0.6; padding: 4px;" onclick="Dashboard.dismissAlert('${alertId}')">
-                  <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-                </button>
-              </div>
-            </div>
-          `);
+            `);
+          }
         }
-      }
-    });
+      });
+    }
 
-    // Despesas Fixas
+    // Despesas Fixas (Sempre mostra)
     fixedExpenses.forEach(e => {
       const alertId = `alert-exp-${e.id}-${currentMonth}-${currentYear}`;
       if (Store.isAlertDismissed(alertId)) return;
@@ -82,8 +85,6 @@ const Dashboard = {
       const isPaid = monthTx.some(t => t.fixedExpId === e.id);
       if (!isPaid) {
         const dueDay = parseInt(e.dueDay) || 1;
-        
-        // Só mostra se for HOJE ou ONTEM
         if (isTodayOrYesterday(dueDay) && currentDay >= dueDay) {
           alerts.push(`
             <div style="background: rgba(248, 113, 113, 0.1); border-left: 4px solid var(--color-danger); padding: 12px 16px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between;">
@@ -117,51 +118,123 @@ const Dashboard = {
 
   async renderWelcome() {
     const name = await Store.getDisplayUser();
+    const ws = Store.getActiveWorkspace();
     document.getElementById('welcome-name').textContent = name;
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-BR', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
     });
+    
+    const context = ws.type === 'enterprise' ? 'Gestão Corporativa' : 'Gestão Pessoal';
     document.getElementById('welcome-date').textContent =
-      `${getGreeting()}! Hoje é ${dateStr.charAt(0).toUpperCase() + dateStr.slice(1)}`;
+      `${getGreeting()}! Hoje é ${dateStr.charAt(0).toUpperCase() + dateStr.slice(1)} • ${context}`;
   },
 
   renderStats() {
+    const ws = Store.getActiveWorkspace();
     const finance = Store.getFinanceSummary(getCurrentMonth(), getCurrentYear());
     const projects = Store.getProjectCounts();
     const clients = Store.getAll('clients').length;
     const tasks = Store.getTaskStats();
 
-    document.getElementById('dashboard-stats').innerHTML = `
+    let html = `
       <div class="stat-card">
         <div class="stat-icon green"><i data-lucide="trending-up"></i></div>
         <div class="stat-value text-success">${formatCurrency(finance.receitas)}</div>
-        <div class="stat-label">Receitas do Mês</div>
+        <div class="stat-label">${ws.type === 'enterprise' ? 'Receitas do Mês' : 'Renda do Mês'}</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon red"><i data-lucide="trending-down"></i></div>
         <div class="stat-value text-danger">${formatCurrency(finance.despesas)}</div>
         <div class="stat-label">Despesas do Mês</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon purple"><i data-lucide="folder-kanban"></i></div>
-        <div class="stat-value">${projects.doing}</div>
-        <div class="stat-label">Projetos em Andamento</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon blue"><i data-lucide="users"></i></div>
-        <div class="stat-value">${clients}</div>
-        <div class="stat-label">Clientes</div>
-      </div>
     `;
+
+    if (ws.type === 'enterprise') {
+      html += `
+        <div class="stat-card">
+          <div class="stat-icon purple"><i data-lucide="folder-kanban"></i></div>
+          <div class="stat-value">${projects.doing}</div>
+          <div class="stat-label">Projetos em Andamento</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i data-lucide="users"></i></div>
+          <div class="stat-value">${clients}</div>
+          <div class="stat-label">Clientes</div>
+        </div>
+      `;
+    } else {
+      const books = Store.getAll('books').length;
+      const courses = Store.getAll('courses').length;
+      html += `
+        <div class="stat-card">
+          <div class="stat-icon yellow"><i data-lucide="check-square"></i></div>
+          <div class="stat-value">${tasks.pending}</div>
+          <div class="stat-label">Tarefas Pendentes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i data-lucide="graduation-cap"></i></div>
+          <div class="stat-value">${books + courses}</div>
+          <div class="stat-label">Livros & Cursos</div>
+        </div>
+      `;
+    }
+
+    document.getElementById('dashboard-stats').innerHTML = html;
     lucide.createIcons();
   },
 
+  renderQuickActions() {
+    const ws = Store.getActiveWorkspace();
+    const container = document.getElementById('dashboard-quick-actions');
+    if (!container) return;
+
+    let html = `
+      <button class="quick-action-btn" data-action="add-transaction">
+        <i data-lucide="plus-circle"></i>
+        <span>Nova Transação</span>
+      </button>
+    `;
+
+    if (ws.type === 'enterprise') {
+      html += `
+        <button class="quick-action-btn" data-action="add-project">
+          <i data-lucide="folder-plus"></i>
+          <span>Novo Projeto</span>
+        </button>
+        <button class="quick-action-btn" data-action="add-client">
+          <i data-lucide="user-plus"></i>
+          <span>Novo Cliente</span>
+        </button>
+      `;
+    } else {
+      html += `
+        <button class="quick-action-btn" data-action="add-book">
+          <i data-lucide="book-plus"></i>
+          <span>Novo Livro</span>
+        </button>
+        <button class="quick-action-btn" data-action="add-course">
+          <i data-lucide="graduation-cap"></i>
+          <span>Novo Curso</span>
+        </button>
+      `;
+    }
+
+    html += `
+      <button class="quick-action-btn" data-action="add-task">
+        <i data-lucide="list-plus"></i>
+        <span>Nova Tarefa</span>
+      </button>
+    `;
+
+    container.innerHTML = html;
+  },
+
   renderChart() {
+    const ws = Store.getActiveWorkspace();
     const data = Store.getChartData();
     const ctx = document.getElementById('finance-chart');
     if (!ctx) return;
-
     if (this.chart) this.chart.destroy();
 
     this.chart = new Chart(ctx, {
@@ -170,7 +243,7 @@ const Dashboard = {
         labels: data.labels,
         datasets: [
           {
-            label: 'Receitas',
+            label: ws.type === 'enterprise' ? 'Receitas' : 'Ganhos',
             data: data.receitas,
             backgroundColor: 'rgba(52, 211, 153, 0.3)',
             borderColor: '#34d399',
@@ -245,6 +318,7 @@ const Dashboard = {
   renderActivities() {
     const activities = Store.getAll('activities').slice(0, 8);
     const container = document.getElementById('activity-list');
+    if (!container) return;
 
     if (activities.length === 0) {
       container.innerHTML = `
@@ -262,7 +336,9 @@ const Dashboard = {
       transactions: { icon: 'wallet', color: 'purple' },
       projects: { icon: 'kanban', color: 'blue' },
       clients: { icon: 'users', color: 'green' },
-      tasks: { icon: 'list-checks', color: 'yellow' }
+      tasks: { icon: 'list-checks', color: 'yellow' },
+      books: { icon: 'book', color: 'blue' },
+      courses: { icon: 'graduation-cap', color: 'purple' }
     };
 
     const actionText = {
@@ -278,8 +354,8 @@ const Dashboard = {
         : '';
       return `
         <div class="activity-item">
-          <div class="activity-icon ${meta.color}" style="background: var(--${meta.color === 'purple' ? 'accent-primary' : meta.color === 'blue' ? 'accent-secondary' : meta.color === 'green' ? 'color-success' : 'color-warning'}-soft);">
-            <i data-lucide="${meta.icon}" style="color: var(--${meta.color === 'purple' ? 'accent-primary' : meta.color === 'blue' ? 'accent-secondary' : meta.color === 'green' ? 'color-success' : 'color-warning'});"></i>
+          <div class="activity-icon ${meta.color}">
+            <i data-lucide="${meta.icon}"></i>
           </div>
           <div class="activity-info">
             <div class="activity-text">${actionText[a.action] || ''} <strong>${a.itemName}</strong></div>
@@ -294,23 +370,19 @@ const Dashboard = {
 
   bindQuickActions() {
     document.querySelectorAll('.quick-action-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      // Use replaceWith for clean listener re-binding if needed, 
+      // though for simple app it might be okay to just clear and re-add if we handle it well.
+      btn.onclick = () => {
         const action = btn.dataset.action;
         switch (action) {
-          case 'add-transaction':
-            Financeiro.openForm();
-            break;
-          case 'add-project':
-            Projetos.openForm();
-            break;
-          case 'add-client':
-            Clientes.openForm();
-            break;
-          case 'add-task':
-            Estudos.openForm();
-            break;
+          case 'add-transaction': Financeiro.openForm(); break;
+          case 'add-project': Projetos.openForm(); break;
+          case 'add-client': Clientes.openForm(); break;
+          case 'add-task': Estudos.openForm(); break;
+          case 'add-book': Estudos.openBookForm(); break;
+          case 'add-course': Estudos.openCourseForm(); break;
         }
-      });
+      };
     });
   }
 };
