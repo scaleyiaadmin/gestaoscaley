@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Inicializar módulos
   Sidebar.init();
   Financeiro.init();
+  Cobrancas.init();
   Projetos.init();
   Clientes.init();
   Estudos.init();

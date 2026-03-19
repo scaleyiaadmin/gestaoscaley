@@ -77,6 +77,10 @@
           <i data-lucide="users"></i>
           <span>Clientes</span>
         </div>
+        <div class="nav-item" data-page="cobrancas">
+          <i data-lucide="bell-ring"></i>
+          <span>Cobranças</span>
+        </div>
         <div class="nav-item" data-page="estudos">
           <i data-lucide="book-open"></i>
           <span>Estudos</span>
@@ -168,24 +172,7 @@
             </button>
           </div>
 
-          <div class="finance-summary" id="finance-summary"></div>
-
-          <!-- ======== MRR SECTION ======== -->
-          <div class="mrr-section" style="margin-bottom: var(--space-6); background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--space-4);">
-            <div class="mrr-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-              <h2 style="font-size: var(--font-size-md); font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="calendar-clock" style="width: 18px; height: 18px; color: var(--accent-primary);"></i>
-                Mensalidades (MRR) - <span id="mrr-month-name" style="color: var(--text-secondary); margin-left: 4px;">Atual</span>
-              </h2>
-              <div class="mrr-stats" style="display: flex; gap: var(--space-4); font-size: var(--font-size-sm);">
-                <span style="color: var(--color-success); font-weight: 500;" id="mrr-stat-total">Total: R$ 0,00</span>
-                <span style="color: var(--color-danger); font-weight: 500;" id="mrr-stat-pending">Pendentes: 0</span>
-              </div>
-            </div>
-            <div class="mrr-list" id="mrr-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-3);">
-              <!-- Cards de Fatura de Clientes gerados pelo JS -->
-            </div>
-          </div>
+          <div class="finance-summary" id="finance-summary" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4);"></div>
 
           <div class="finance-filters">
             <div class="filter-group">
@@ -307,6 +294,31 @@
             <i data-lucide="users"></i>
             <h3>Nenhum cliente cadastrado</h3>
             <p>Adicione seu primeiro cliente</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======== COBRANÇAS (MRR) ======== -->
+      <section class="page-section" id="page-cobrancas">
+        <div class="page-container">
+          <div class="page-header">
+            <div>
+              <h1>Pagamentos Pendentes</h1>
+              <p>Acompanhe e confirme as mensalidades em aberto</p>
+            </div>
+          </div>
+
+          <div class="mrr-section">
+            <div class="mrr-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+              <h2 style="font-size: var(--font-size-md); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="calendar-clock" style="width: 18px; height: 18px; color: var(--accent-primary);"></i>
+                Faturas do Mês - <span id="mrr-month-name" style="color: var(--text-secondary); margin-left: 4px;">Atual</span>
+              </h2>
+            </div>
+            
+            <div class="mrr-list" id="mrr-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-4);">
+              <!-- Cards de Fatura de Clientes gerados pelo JS -->
+            </div>
           </div>
         </div>
       </section>
@@ -878,6 +890,7 @@
   <script src="js/sidebar.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/financeiro.js"></script>
+  <script src="js/cobrancas.js"></script>
   <script src="js/projetos.js"></script>
   <script src="js/clientes.js"></script>
   <script src="js/estudos.js"></script>
