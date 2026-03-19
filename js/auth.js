@@ -104,14 +104,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         authBtn.innerHTML = originalBtnContent;
         authBtn.disabled = false;
       } else {
-        // Se cadastrou nome, salva no localStorage para saudação imediata
-        if (fullName) localStorage.setItem('scaley_username', fullName);
-        
-        successBox.textContent = 'Bem-vindo ao Scaley! Sua conta foi ativada com sucesso.';
-        successBox.style.display = 'block';
-        setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 1500);
+        // Se houver sessão imediata (e-mail confirmation OFF no Supabase)
+        if (data.session) {
+          if (fullName) localStorage.setItem('scaley_username', fullName);
+          successBox.textContent = 'Bem-vindo ao Scaley! Preparando seu dashboard...';
+          successBox.style.display = 'block';
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+        } else {
+          // E-mail confirmation ON
+          successBox.innerHTML = '<strong>Cadastro realizado!</strong><br>Por favor, verifique o link de confirmação enviado para seu e-mail para ativar sua conta e poder entrar.';
+          successBox.style.display = 'block';
+          authBtn.innerHTML = originalBtnContent;
+          authBtn.disabled = false;
+        }
       }
     }
   });
