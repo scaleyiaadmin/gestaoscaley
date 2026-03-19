@@ -32,8 +32,11 @@ const Financeiro = {
 
     // Eventos Despesas Fixas
     document.getElementById('manage-expenses-btn').addEventListener('click', () => this.openFixedExpensesModal());
+    document.getElementById('manage-incomes-btn').addEventListener('click', () => this.openFixedIncomesModal());
     document.getElementById('btn-new-fixed-exp').addEventListener('click', () => this.openFixedExpForm());
+    document.getElementById('btn-new-fixed-inc').addEventListener('click', () => this.openFixedIncForm());
     document.getElementById('save-fixed-exp-btn').addEventListener('click', () => this.saveFixedExp());
+    document.getElementById('save-fixed-income-btn').addEventListener('click', () => this.saveFixedIncome());
   },
 
   render() {
@@ -48,12 +51,12 @@ const Financeiro = {
 
   renderSummary(month, year) {
     const summary = Store.getFinanceSummary(month, year);
-    const totalMrr = Store.getAll('clients').reduce((acc, c) => acc + (parseFloat(c.mrr) || 0), 0);
+    const isPersonal = summary.wsType === 'personal';
     
     document.getElementById('finance-summary').innerHTML = `
       <div class="summary-card">
-        <div class="summary-label">MRR Estimado</div>
-        <div class="summary-value" style="color: var(--accent-primary);">${formatCurrency(totalMrr)}</div>
+        <div class="summary-label">${isPersonal ? 'Renda Fixa' : 'MRR Estimado'}</div>
+        <div class="summary-value" style="color: var(--accent-primary);">${formatCurrency(summary.mrrOrSalary)}</div>
       </div>
       <div class="summary-card">
         <div class="summary-label">Receitas</div>
@@ -242,6 +245,92 @@ const Financeiro = {
       Store.delete('fixed_expenses', id);
       closeModal('modal-confirm');
       this.renderFixedExpensesList();
+      if(typeof Cobrancas !== 'undefined') Cobrancas.render();
+    };
+    openModal('modal-confirm');
+  },
+
+  // ======== RECEITAS FIXAS ========
+
+  openFixedIncomesModal() {
+    this.renderFixedIncomesList();
+    openModal('modal-fixed-incomes');
+  },
+
+  renderFixedIncomesList() {
+    const list = Store.getAll('fixed_incomes');
+    const container = document.getElementById('fixed-incomes-list-manage');
+
+    if (list.length === 0) {
+      container.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;padding:12px;text-align:center;">Nenhuma receita fixa cadastrada.</p>';
+      return;
+    }
+
+    container.innerHTML = list.map(item => `
+      <div style="border: 1px solid var(--border-color); background: var(--bg-hover); padding: 12px; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <strong style="color: var(--text-primary); font-size: 14px;">${item.name}</strong>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top:2px;">
+            R$ ${parseFloat(item.value).toFixed(2)} • Todo dia ${item.dueDay}
+          </div>
+        </div>
+        <div style="display:flex; gap: 4px;">
+          <button class="btn-ghost btn-icon btn-sm" onclick="Financeiro.editFixedInc('${item.id}')" title="Editar">
+            <i data-lucide="pencil" style="width:14px;height:14px;"></i>
+          </button>
+          <button class="btn-ghost btn-icon btn-sm" onclick="Financeiro.confirmDeleteFixedInc('${item.id}')" title="Excluir">
+            <i data-lucide="trash-2" style="width:14px;height:14px;color:var(--color-danger);"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  },
+
+  openFixedIncForm(data = null) {
+    document.getElementById('modal-fixed-income-title').textContent = data ? 'Editar Receita Fixa' : 'Nova Receita Fixa';
+    document.getElementById('fi-name').value = data ? data.name : '';
+    document.getElementById('fi-value').value = data ? data.value : '';
+    document.getElementById('fi-due-day').value = data ? data.dueDay : '';
+    document.getElementById('fi-category').value = data ? data.category : 'salario';
+    document.getElementById('fi-id').value = data ? data.id : '';
+    openModal('modal-fixed-income-form');
+  },
+
+  saveFixedIncome() {
+    const id = document.getElementById('fi-id').value;
+    const data = {
+      name: document.getElementById('fi-name').value.trim(),
+      value: document.getElementById('fi-value').value.trim(),
+      dueDay: document.getElementById('fi-due-day').value.trim(),
+      category: document.getElementById('fi-category').value
+    };
+    
+    if (!data.name || !data.value || !data.dueDay) return;
+
+    if (id) {
+      Store.update('fixed_incomes', id, data);
+    } else {
+      Store.add('fixed_incomes', data);
+    }
+    
+    closeModal('modal-fixed-income-form');
+    this.renderFixedIncomesList();
+    if(typeof Cobrancas !== 'undefined') Cobrancas.render();
+  },
+
+  editFixedInc(id) {
+    const item = Store.getById('fixed_incomes', id);
+    if (item) this.openFixedIncForm(item);
+  },
+
+  confirmDeleteFixedInc(id) {
+    document.getElementById('confirm-message').textContent = 'Excluir esta Receita Fixa? O histórico de recebimentos dela NÃO será apagado.';
+    const btn = document.getElementById('confirm-action-btn');
+    btn.onclick = () => {
+      Store.delete('fixed_incomes', id);
+      closeModal('modal-confirm');
+      this.renderFixedIncomesList();
       if(typeof Cobrancas !== 'undefined') Cobrancas.render();
     };
     openModal('modal-confirm');

@@ -73,11 +73,11 @@
           <i data-lucide="kanban"></i>
           <span>Projetos</span>
         </div>
-        <div class="nav-item" data-page="clientes">
+        <div class="nav-item" data-page="clientes" id="nav-clientes">
           <i data-lucide="users"></i>
           <span>Clientes</span>
         </div>
-        <div class="nav-item" data-page="cobrancas">
+        <div class="nav-item" data-page="cobrancas" id="nav-cobrancas">
           <i data-lucide="bell-ring"></i>
           <span>Cobranças</span>
         </div>
@@ -178,6 +178,10 @@
               <button class="btn btn-secondary" id="manage-expenses-btn">
                 <i data-lucide="repeat"></i>
                 Despesas Fixas
+              </button>
+              <button class="btn btn-secondary" id="manage-incomes-btn">
+                <i data-lucide="trending-up"></i>
+                Receitas Fixas
               </button>
               <button class="btn btn-primary" id="add-transaction-btn">
                 <i data-lucide="plus"></i>
@@ -327,9 +331,9 @@
             <!-- A Receber (MRR) -->
             <div class="mrr-section">
               <div class="mrr-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-                <h2 style="font-size: var(--font-size-md); font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                  <i data-lucide="arrow-down-to-line" style="width: 18px; height: 18px; color: var(--color-success);"></i>
-                  A Receber do Mês (MRR) - <span id="mrr-month-name" style="color: var(--text-secondary); margin-left: 4px;">Atual</span>
+                <h2 id="mrr-title-text" style="font-size: var(--font-size-md); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="arrow-down-to-line" id="mrr-title-icon" style="width: 18px; height: 18px; color: var(--color-success);"></i>
+                  <span id="mrr-title-label">A Receber do Mês (MRR)</span> - <span id="mrr-month-name" style="color: var(--text-secondary); margin-left: 4px;">Atual</span>
                 </h2>
               </div>
               <div class="mrr-list" id="mrr-list" style="display: flex; flex-direction: column; gap: var(--space-4);">
@@ -1032,5 +1036,66 @@
   <script src="js/estudos.js"></script>
   <script src="js/backlog.js"></script>
   <script src="js/app.js"></script>
+  <!-- Modal Gerenciar Receitas Fixas -->
+  <div class="modal-overlay" id="modal-fixed-incomes">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2>Gerenciar Receitas Fixas</h2>
+        <button class="close-modal" onclick="closeModal('modal-fixed-incomes')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <p style="color: var(--text-secondary); font-size: 14px;">Cadastre salários ou rendas recorrentes.</p>
+          <button class="btn btn-primary btn-sm" id="btn-new-fixed-inc">
+            <i data-lucide="plus"></i> Nova Receita Fixa
+          </button>
+        </div>
+        <div id="fixed-incomes-list-manage" style="display: grid; gap: 12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Formulário Receita Fixa -->
+  <div class="modal-overlay" id="modal-fixed-income-form">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-fixed-income-title">Nova Receita Fixa</h2>
+        <button class="close-modal" onclick="closeModal('modal-fixed-income-form')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-fixed-income">
+          <input type="hidden" id="fi-id">
+          <div class="form-group">
+            <label>Nome / Fonte</label>
+            <input type="text" id="fi-name" placeholder="Ex: Salário Mensal, Aluguel...">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Valor Mensal (R$)</label>
+              <input type="number" id="fi-value" step="0.01" placeholder="0,00">
+            </div>
+            <div class="form-group">
+              <label>Dia do Recebimento</label>
+              <input type="number" id="fi-due-day" min="1" max="31" placeholder="Ex: 5">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Categoria</label>
+            <select id="fi-category">
+              <option value="salario">Salário</option>
+              <option value="investimento">Investimento</option>
+              <option value="extra">Extra</option>
+              <option value="outros">Outros</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-fixed-income-form')">Cancelar</button>
+        <button class="btn btn-primary" id="save-fixed-income-btn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

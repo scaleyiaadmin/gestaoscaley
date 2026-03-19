@@ -292,6 +292,23 @@ const Store = {
       .reduce((s, e) => s + Number(e.value), 0);
   },
 
+  getFixedIncomesPending(month, year) {
+    const incomes = this.getAll('fixed_incomes');
+    const m = month !== undefined && month !== -1 ? month : new Date().getMonth();
+    const y = year !== undefined ? year : new Date().getFullYear();
+
+    const startObj = new Date(y, m, 1);
+    const endObj = new Date(y, m+1, 0);
+    const monthTx = this.getAll('transactions').filter(t => {
+      const d = new Date(t.date + 'T00:00:00');
+      return t.type === 'receita' && t.fixedIncomeId && d >= startObj && d <= endObj;
+    });
+
+    return incomes
+      .filter(i => !monthTx.some(t => t.fixedIncomeId === i.id))
+      .reduce((s, i) => s + Number(i.value), 0);
+  },
+
   // Transações filtradas por mês/ano
   getTransactions(month, year, type) {
     let items = this.getAll('transactions');
@@ -321,7 +338,17 @@ const Store = {
     const receitas = items.filter(t => t.type === 'receita').reduce((s, t) => s + Number(t.value), 0);
     const despesas = items.filter(t => t.type === 'despesa').reduce((s, t) => s + Number(t.value), 0);
     const aPagar = this.getFixedExpensesPending(month, year);
-    return { receitas, despesas, saldo: receitas - despesas, aPagar };
+    const aReceber = this.getFixedIncomesPending(month, year);
+    
+    const ws = this.getActiveWorkspace();
+    let mrrOrSalary = 0;
+    if (ws.type === 'enterprise') {
+      mrrOrSalary = this.getAll('clients').reduce((acc, c) => acc + (parseFloat(c.mrr) || 0), 0);
+    } else {
+      mrrOrSalary = this.getAll('fixed_incomes').reduce((acc, i) => acc + (parseFloat(i.value) || 0), 0);
+    }
+
+    return { receitas, despesas, saldo: receitas - despesas, aPagar, aReceber, mrrOrSalary, wsType: ws.type };
   },
 
   // Dados do gráfico (últimos 6 meses)

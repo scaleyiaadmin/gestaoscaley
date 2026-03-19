@@ -96,12 +96,19 @@ const Sidebar = {
     const navEstudos = document.getElementById('nav-estudos');
     const navBacklog = document.getElementById('nav-backlog');
 
+    const navClientes = document.getElementById('nav-clientes');
+    const navCobrancas = document.getElementById('nav-cobrancas');
+
     if (active.type === 'enterprise') {
       navEstudos.classList.add('hidden');
       navBacklog.classList.remove('hidden');
+      navClientes.classList.remove('hidden');
+      navCobrancas.querySelector('span').textContent = 'Cobranças';
     } else {
       navEstudos.classList.remove('hidden');
       navBacklog.classList.add('hidden');
+      navClientes.classList.add('hidden');
+      navCobrancas.querySelector('span').textContent = 'Contas e Ganhos';
     }
   },
 
