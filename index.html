@@ -81,9 +81,13 @@
           <i data-lucide="bell-ring"></i>
           <span>Cobranças</span>
         </div>
-        <div class="nav-item" data-page="estudos">
+        <div class="nav-item" data-page="estudos" id="nav-estudos">
           <i data-lucide="book-open"></i>
           <span>Estudos</span>
+        </div>
+        <div class="nav-item hidden" data-page="backlog" id="nav-backlog">
+          <i data-lucide="list-todo"></i>
+          <span>Backlog</span>
         </div>
       </nav>
 
@@ -443,6 +447,36 @@
             </div>
           </div>
 
+        </div>
+      </section>
+
+      <!-- ======== BACKLOG (Visualizado em Workspaces Enterprise) ======== -->
+      <section class="page-section" id="page-backlog">
+        <div class="page-container">
+          <div class="page-header">
+            <div>
+              <h1>Backlog de Tarefas</h1>
+              <p>Gerencie o backlog e as entregas corporativas</p>
+            </div>
+            <button class="btn btn-primary" id="add-backlog-task-btn">
+              <i data-lucide="plus"></i>
+              Nova Tarefa de Backlog
+            </button>
+          </div>
+          
+          <div class="toolbar" style="margin-top: var(--space-6);">
+            <div class="tabs" id="backlog-filters">
+              <button class="tab-btn active" data-filter="todos">Todos</button>
+              <button class="tab-btn" data-filter="pendente">Pendentes</button>
+              <button class="tab-btn" data-filter="concluido">Concluídos</button>
+            </div>
+          </div>
+          <div class="task-list" id="backlog-list"></div>
+          <div class="empty-state hidden" id="backlog-empty">
+            <i data-lucide="list-todo"></i>
+            <h3>Nenhuma tarefa no backlog</h3>
+            <p>Comece adicionando tarefas corporativas aqui</p>
+          </div>
         </div>
       </section>
 
@@ -878,6 +912,17 @@
             <label>Cor</label>
             <input type="color" id="ws-color" value="#7c5cfc" style="height: 40px; padding: 4px;">
           </div>
+          <div class="form-group">
+            <label>Tipo de Workspace</label>
+            <select id="ws-type">
+              <option value="personal">Pessoal (Focado em Estudos/Habilidades)</option>
+              <option value="enterprise">Enterprise (Focado em Clientes/Projetos/Backlog)</option>
+            </select>
+            <p style="font-size: var(--font-size-xs); color: var(--text-tertiary); margin-top: 4px;">
+              O tipo de workspace altera as ferramentas disponíveis na barra lateral.
+            </p>
+          </div>
+          <input type="hidden" id="ws-id">
         </form>
       </div>
       <div class="modal-footer">
@@ -985,6 +1030,7 @@
   <script src="js/projetos.js"></script>
   <script src="js/clientes.js"></script>
   <script src="js/estudos.js"></script>
+  <script src="js/backlog.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

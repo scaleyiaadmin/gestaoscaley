@@ -138,7 +138,7 @@ const Store = {
     let data = localStorage.getItem('scaley_workspaces');
     if (!data || JSON.parse(data).length === 0) {
       const defaults = [
-        { id: 'pessoal', name: 'Pessoal', color: '#7c5cfc' }
+        { id: 'pessoal', name: 'Pessoal', color: '#7c5cfc', type: 'personal' }
       ];
       localStorage.setItem('scaley_workspaces', JSON.stringify(defaults));
       return defaults;
@@ -150,14 +150,26 @@ const Store = {
     localStorage.setItem('scaley_workspaces', JSON.stringify(workspaces));
   },
 
-  addWorkspace(name, color) {
+  addWorkspace(name, color, type = 'personal') {
     const workspaces = this.getWorkspaces();
-    const ws = { id: generateId(), name, color };
+    const ws = { id: generateId(), name, color, type };
     workspaces.push(ws);
     this.saveWorkspaces(workspaces);
     // Sincroniza
     this.syncUp('workspaces', 'add', ws);
     return ws;
+  },
+
+  updateWorkspace(id, updates) {
+    const workspaces = this.getWorkspaces();
+    const idx = workspaces.findIndex(w => w.id === id);
+    if (idx !== -1) {
+      workspaces[idx] = { ...workspaces[idx], ...updates };
+      this.saveWorkspaces(workspaces);
+      this.syncUp('workspaces', 'update', workspaces[idx]);
+      return workspaces[idx];
+    }
+    return null;
   },
 
   deleteWorkspace(id) {

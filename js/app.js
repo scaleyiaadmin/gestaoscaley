@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   Projetos.init();
   Clientes.init();
   Estudos.init();
+  Backlog.init();
 
   // Renderizar dashboard
   Dashboard.render();

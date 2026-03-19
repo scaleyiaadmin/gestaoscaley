@@ -33,6 +33,7 @@ const Sidebar = {
       case 'projetos': Projetos.render(); break;
       case 'clientes': Clientes.render(); break;
       case 'estudos': Estudos.render(); break;
+      case 'backlog': Backlog.render(); break;
     }
   },
 
@@ -57,20 +58,51 @@ const Sidebar = {
     addBtn.addEventListener('click', () => {
       dropdown.classList.remove('show');
       toggle.classList.remove('open');
+      document.getElementById('modal-workspace').querySelector('h2').textContent = 'Novo Workspace';
+      document.getElementById('ws-id').value = '';
+      document.getElementById('ws-name').value = '';
+      document.getElementById('ws-color').value = '#7c5cfc';
+      document.getElementById('ws-type').value = 'personal';
+      document.getElementById('save-workspace-btn').textContent = 'Criar';
       openModal('modal-workspace');
     });
 
     document.getElementById('save-workspace-btn').addEventListener('click', () => {
+      const id = document.getElementById('ws-id').value;
       const name = document.getElementById('ws-name').value.trim();
       const color = document.getElementById('ws-color').value;
+      const type = document.getElementById('ws-type').value;
+
       if (!name) return;
-      Store.addWorkspace(name, color);
-      document.getElementById('ws-name').value = '';
+
+      if (id) {
+        Store.updateWorkspace(id, { name, color, type });
+      } else {
+        Store.addWorkspace(name, color, type);
+      }
+
       closeModal('modal-workspace');
       this.renderWorkspaces();
+      // Atualiza a navegação após salvar (caso tenha mudado o tipo do ativo)
+      this.updateNavigationVisibility();
     });
 
     this.renderWorkspaces();
+    this.updateNavigationVisibility();
+  },
+
+  updateNavigationVisibility() {
+    const active = Store.getActiveWorkspace();
+    const navEstudos = document.getElementById('nav-estudos');
+    const navBacklog = document.getElementById('nav-backlog');
+
+    if (active.type === 'enterprise') {
+      navEstudos.classList.add('hidden');
+      navBacklog.classList.remove('hidden');
+    } else {
+      navEstudos.classList.remove('hidden');
+      navBacklog.classList.add('hidden');
+    }
   },
 
   renderWorkspaces() {
@@ -85,22 +117,69 @@ const Sidebar = {
     // Render dropdown list
     list.innerHTML = workspaces.map(ws => `
       <div class="workspace-item ${ws.id === active.id ? 'active' : ''}" data-ws-id="${ws.id}">
-        <span class="ws-color" style="background: ${ws.color};"></span>
-        <span>${ws.name}</span>
+        <div class="ws-info">
+          <span class="ws-color" style="background: ${ws.color};"></span>
+          <span class="ws-label">${ws.name} ${ws.type === 'enterprise' ? '<small>(Empresa)</small>' : ''}</span>
+        </div>
+        <div class="ws-actions">
+          <button class="ws-action-btn edit" title="Editar"><i data-lucide="edit-3"></i></button>
+          ${workspaces.length > 1 ? `<button class="ws-action-btn delete" title="Excluir"><i data-lucide="trash-2"></i></button>` : ''}
+        </div>
       </div>
     `).join('');
 
-    // Bind clicks
-    list.querySelectorAll('.workspace-item').forEach(item => {
-      item.addEventListener('click', () => {
+    lucide.createIcons();
+
+    // Bind clicks selection
+    list.querySelectorAll('.ws-info').forEach(info => {
+      info.addEventListener('click', (e) => {
+        const item = info.closest('.workspace-item');
         Store.setActiveWorkspace(item.dataset.wsId);
         this.renderWorkspaces();
+        this.updateNavigationVisibility();
+        
         // Refresh current page
         const activePage = document.querySelector('.nav-item.active');
         if (activePage) this.navigateTo(activePage.dataset.page);
+        
         // Close dropdown
         document.getElementById('workspace-toggle').classList.remove('open');
         document.getElementById('workspace-dropdown').classList.remove('show');
+      });
+    });
+
+    // Bind Edit
+    list.querySelectorAll('.ws-action-btn.edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.closest('.workspace-item').dataset.wsId;
+        const ws = workspaces.find(w => w.id === id);
+        
+        document.getElementById('modal-workspace').querySelector('h2').textContent = 'Editar Workspace';
+        document.getElementById('ws-id').value = ws.id;
+        document.getElementById('ws-name').value = ws.name;
+        document.getElementById('ws-color').value = ws.color;
+        document.getElementById('ws-type').value = ws.type || 'personal';
+        document.getElementById('save-workspace-btn').textContent = 'Salvar Alterações';
+        
+        document.getElementById('workspace-dropdown').classList.remove('show');
+        document.getElementById('workspace-toggle').classList.remove('open');
+        openModal('modal-workspace');
+      });
+    });
+
+    // Bind Delete
+    list.querySelectorAll('.ws-action-btn.delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.closest('.workspace-item').dataset.wsId;
+        const ws = workspaces.find(w => w.id === id);
+        
+        if (confirm(`Tem certeza que deseja excluir o workspace "${ws.name}"? Todos os dados vinculados a ele serão perdidos localmente.`)) {
+          Store.deleteWorkspace(id);
+          this.renderWorkspaces();
+          this.updateNavigationVisibility();
+        }
       });
     });
   }
