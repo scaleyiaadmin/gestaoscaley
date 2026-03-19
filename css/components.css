@@ -119,6 +119,12 @@
   margin-bottom: var(--space-8);
 }
 
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .stat-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);

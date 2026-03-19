@@ -4,6 +4,23 @@ const Sidebar = {
   init() {
     this.bindNavigation();
     this.bindWorkspace();
+    this.bindMobileMenu();
+  },
+
+  bindMobileMenu() {
+    const toggle = document.getElementById('mobile-menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('mobile-open');
+      });
+
+      // Fecha ao clicar fora (no main content)
+      document.getElementById('main-content').addEventListener('click', () => {
+        sidebar.classList.remove('mobile-open');
+      });
+    }
   },
 
   bindNavigation() {
@@ -25,6 +42,9 @@ const Sidebar = {
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     const section = document.getElementById(`page-${page}`);
     if (section) section.classList.add('active');
+
+    // Fecha a sidebar no mobile após navegar
+    document.getElementById('sidebar').classList.remove('mobile-open');
 
     // Refresh the page data
     switch (page) {
@@ -145,6 +165,9 @@ const Sidebar = {
         Store.setActiveWorkspace(item.dataset.wsId);
         this.renderWorkspaces();
         this.updateNavigationVisibility();
+        
+        // Fecha a sidebar no mobile após mudar workspace
+        document.getElementById('sidebar').classList.remove('mobile-open');
         
         // Refresh current page
         const activePage = document.querySelector('.nav-item.active');

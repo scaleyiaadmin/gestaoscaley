@@ -21,9 +21,9 @@
 
     body {
       background: var(--bg-primary);
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
       display: flex;
+      flex-direction: column; /* Para empilhar se necessário */
     }
 
     /* Layout Principal: Split Screen */
@@ -293,6 +293,37 @@
     @media (max-width: 1024px) {
       .auth-bg-side { display: none; }
       .auth-form-side { flex: 1; }
+    }
+
+    @media (max-width: 480px) {
+      .auth-form-side {
+        padding: var(--space-8) var(--space-6);
+        justify-content: flex-start;
+      }
+
+      .logo-header {
+        margin-bottom: var(--space-8);
+      }
+
+      .logo-header img {
+        height: 40px;
+      }
+
+      .auth-title-section h3 {
+        font-size: 26px;
+      }
+
+      .form-container {
+        padding-top: var(--space-4);
+      }
+
+      .input-field {
+        margin-bottom: var(--space-4);
+      }
+      
+      .action-btn {
+        margin-top: var(--space-4);
+      }
     }
   </style>
 </head>

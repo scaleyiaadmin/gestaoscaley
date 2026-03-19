@@ -133,3 +133,20 @@
   font-size: var(--font-size-sm);
   margin-top: var(--space-1);
 }
+
+/* Responsividade Dashboard */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .welcome-section h2 {
+    font-size: var(--font-size-xl);
+  }
+}
+
+@media (max-width: 480px) {
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+}
